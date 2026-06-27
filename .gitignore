@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+build/
+dist/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# LabGrYMace caches generated next to data
+_labgrymace_cache.npz
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

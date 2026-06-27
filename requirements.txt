@@ -1,0 +1,9 @@
+# Runtime dependencies for LabGrYMace.
+# Prefer `pip install .` (which reads pyproject.toml); this file is for users who
+# want to install dependencies manually.
+wxPython
+pandas
+numpy
+matplotlib
+openpyxl
+opencv-python

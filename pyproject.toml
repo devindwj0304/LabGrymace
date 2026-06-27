@@ -1,0 +1,33 @@
+[build-system]
+requires = ['setuptools>=61']
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 'LabGrYMace'
+version = '0.1.0'
+description = 'Mouse facial-expression analysis for pain quantification (a LabGym extension).'
+readme = 'README.md'
+requires-python = '>=3.9'
+license = {text = 'GPL-3.0-or-later'}
+authors = [
+    {name = 'Wenjin Dong', email = 'devindwj@umich.edu'},
+]
+keywords = ['neuroscience', 'pain', 'facial-expression', 'mouse', 'LabGym', 'behavior']
+dependencies = [
+    'wxPython',
+    'pandas',
+    'numpy',
+    'matplotlib',
+    'openpyxl',
+    'opencv-python',
+]
+
+[project.urls]
+Homepage = 'https://github.com/devindwj0304/LabGrYMace'
+
+# `LabGrYMace` becomes a terminal command that launches the GUI after install.
+[project.scripts]
+LabGrYMace = 'LabGrYMace.gui_main:main_window'
+
+[tool.setuptools]
+packages = ['LabGrYMace']
