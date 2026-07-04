@@ -11,7 +11,6 @@ class FacialDataIntegrator:
         # Define all datasets and their paths (expanded to include new datasets)
         self.datasets = {
             # Original datasets
-            'High_CNO_4026': os.path.join(base_path, "4026 KI High CNO Individual"),
             'Baseline_4116': os.path.join(base_path, "4116 Baseline Individual"),
             'Low_CNO_KI': os.path.join(base_path, "KI low CNO Individual"),
             # Previously added datasets

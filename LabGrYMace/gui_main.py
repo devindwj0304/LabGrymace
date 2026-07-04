@@ -13,38 +13,49 @@ from pathlib import Path
 from LabGrYMace import __version__
 
 # ============================================================================
-# Fixed weights (from intensity_area slopes of CNO dose-response)
+# Calibration — DERIVED from the Figure 4 outputs (single source of truth; NOT hand-typed numbers).
+#   weights W_*      = |slope| of each region's intensity_area dose-response   (Figure 4B-D 'Fit')
+#   Z-ref mean/std   = Figure 4E 'Z_reference' sheet
+#   0/100 anchors    = Figure 4E 'Anchors_stats' sheet  (BASELINE_RAW -> 0, CNO_1MG_RAW -> 100)
+# The values are read from those Excel files, so there is no literal to hand-edit and the GUI stays
+# consistent with the figures. By default it reads the two Excel files bundled inside this package
+# (LabGrYMace/calibration/), so the install is self-contained. To track a live/regenerated Figure 4
+# instead, set the environment variable LABGRYMACE_FIGURE4_DIR to that directory (it must contain
+# Figure4B-D/figure4bd_data.xlsx and Figure4E/dose_response_data.xlsx); the GUI then follows it.
 # ============================================================================
-W_EAR  = abs(-2.721)   # Ears - BL (Baseline resting state)
-W_EYE  = abs(-3.326)   # Eyes - OT (Orbital Tightening)
-W_NOSE = abs(-2.088)   # Nose - Bul (Bulging)
+_FIG4_BUNDLE = Path(__file__).resolve().parent / 'calibration'
+_FIG4_LIVE   = os.environ.get('LABGRYMACE_FIGURE4_DIR')   # optional override -> a live Figure 4 dir
 
-# ============================================================================
-# CNO Reference Statistics
-# Pre-computed from BL_log_scale_data.csv / OT_log_scale_data.csv /
-# Bul_log_scale_data.csv (5 CNO dose groups, ddof=1).
-# These are FIXED — never recomputed from the loaded data.
-# ============================================================================
-CNO_EAR_MEAN  = 6.623317
-CNO_EAR_STD   = 2.933454
-CNO_EYE_MEAN  = 9.047364
-CNO_EYE_STD   = 2.888113
-CNO_NOSE_MEAN = 6.563007
-CNO_NOSE_STD  = 4.451777
+def _read_calibration(bd_xlsx, de_xlsx):
+    '''weights from Figure 4B-D slopes; mean/std + anchors from Figure 4E (all derived, no literals).'''
+    fit = pd.read_excel(bd_xlsx, sheet_name='Fit').set_index('Behavior')['slope']
+    W = (abs(float(fit['Ear Resting State'])), abs(float(fit['Orbital Tightening'])),
+         abs(float(fit['Nose Bulging'])))
+    z = pd.read_excel(de_xlsx, sheet_name='Z_reference').set_index('Region')
+    MS = tuple(float(z.loc[r, c]) for r in ('ear', 'eye', 'nose') for c in ('CNO_mean', 'CNO_std'))
+    a = pd.read_excel(de_xlsx, sheet_name='Anchors_stats').set_index('Item')['Value']
+    r0   = float(next(v for k, v in a.items() if str(k).startswith('BASELINE_RAW')))
+    r100 = float(next(v for k, v in a.items() if str(k).startswith('CNO_1MG_RAW')))
+    return W, MS, (r0, r100)
 
-# Normalization anchors:
-#   BASELINE_RAW_SCORE  →  0   (true baseline)
-#   CNO_1MG_RAW_SCORE   → 100  (1 mg/kg CNO, strongest pain stimulus)
-# Recomputed 2026-04-08 (v3); trimmed causal window method (lookback=60, top 10% trim);
-# all_events + mirror filter (USE_EVENT_FILTER=False);
-# Formula: partial-channel weighted mean — channels renormalized per frame
-#   (frames where eye/nose not visible still contribute via ear alone).
-# BL  (n=5) = 9F1[corrected] / 9F2 / 9M1 / 9M3 / Baseline_4111[corrected]
-#             Baseline_4116 excluded (highest pain score among TrueBL, pain=25.13)
-# 1mg (n=4) = 4M1_clip1[corrected] / 4M1_clip2[corrected] / 5F1 / M4
-# [corrected] = re-run with modified detector (Apr 8 2026), read from CNO folder
-BASELINE_RAW_SCORE = -1.648480
-CNO_1MG_RAW_SCORE  =  1.618406
+def _load_calibration():
+    sources = []                                   # an explicit live Figure 4 dir wins; then the bundle
+    if _FIG4_LIVE:
+        live = Path(_FIG4_LIVE)
+        sources.append((live / 'Figure4B-D' / 'figure4bd_data.xlsx',
+                        live / 'Figure4E' / 'dose_response_data.xlsx'))
+    sources.append((_FIG4_BUNDLE / 'figure4bd_data.xlsx', _FIG4_BUNDLE / 'dose_response_data.xlsx'))
+    for bd, de in sources:
+        try:
+            if bd.exists() and de.exists():
+                return _read_calibration(bd, de) + (str(bd.parent),)
+        except Exception as e:
+            warnings.warn(f'[calibration] failed to read from {bd.parent}: {e}')
+    raise RuntimeError('No Figure 4 calibration source found (bundled copies missing?).')
+
+(W_EAR, W_EYE, W_NOSE), \
+(CNO_EAR_MEAN, CNO_EAR_STD, CNO_EYE_MEAN, CNO_EYE_STD, CNO_NOSE_MEAN, CNO_NOSE_STD), \
+(BASELINE_RAW_SCORE, CNO_1MG_RAW_SCORE), CALIBRATION_SOURCE = _load_calibration()
 
 # Temporal window size (frames per segment)
 FRAME_WINDOW = 3000

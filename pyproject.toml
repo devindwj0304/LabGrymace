@@ -31,3 +31,10 @@ LabGrYMace = 'LabGrYMace.gui_main:main_window'
 
 [tool.setuptools]
 packages = ['LabGrYMace']
+include-package-data = true
+
+# Ship the bundled Figure 4 calibration workbooks: gui_main._load_calibration() reads them at import
+# to derive the weights / mean-std / anchors, so the wheel/sdist must contain them or the console
+# script fails to start.
+[tool.setuptools.package-data]
+LabGrYMace = ['calibration/*.xlsx']
