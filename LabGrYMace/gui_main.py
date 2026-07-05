@@ -417,7 +417,7 @@ def _summary_to_intensity_array(df, event_mask, intensity_cols):
 
 
 _CACHE_FILE = '_labgrymace_cache.npz'
-_CACHE_VERSION = 17  # bump when filter logic changes to force cache rebuild
+_CACHE_VERSION = 18  # bump when filter logic changes to force cache rebuild
 
 
 def _cache_is_valid(folder):
@@ -444,12 +444,15 @@ def _load_from_cache(folder):
     '''Load pre-filtered arrays from the .npz cache.'''
     with np.load(folder / _CACHE_FILE, allow_pickle=True) as c:
         return {
-            'time':           c['time'],
-            'ear_intensity':  c['ear_intensity'],
-            'eye_intensity':  c['eye_intensity'],
-            'nose_intensity': c['nose_intensity'],
-            'n_frames':       int(c['n_frames']),
-            'filter_source':  str(c['filter_source']) + ' [cached]',
+            'time':                c['time'],
+            'ear_intensity':       c['ear_intensity'],
+            'eye_intensity':       c['eye_intensity'],
+            'nose_intensity':      c['nose_intensity'],
+            'ear_mirror_removed':  c['ear_mirror_removed'],
+            'eye_mirror_removed':  c['eye_mirror_removed'],
+            'nose_mirror_removed': c['nose_mirror_removed'],
+            'n_frames':            int(c['n_frames']),
+            'filter_source':       str(c['filter_source']) + ' [cached]',
         }
 
 
@@ -470,6 +473,9 @@ def _save_to_cache(folder, result):
             ear_intensity=ear,
             eye_intensity=eye,
             nose_intensity=nose,
+            ear_mirror_removed=result['ear_mirror_removed'],
+            eye_mirror_removed=result['eye_mirror_removed'],
+            nose_mirror_removed=result['nose_mirror_removed'],
             n_frames=np.array(result['n_frames']),
             filter_source=np.array(result['filter_source']),
         )
@@ -522,7 +528,7 @@ def _temporal_cluster_mask(n_frames, hv_mask, window, min_neighbors):
 
 def _apply_mirror_filter(arr, vel_arr, mag_arr, x_arr, y_arr, event_mask, channel_label):
     '''Apply the 4-condition mirror-reflection filter to a single tracker's
-    intensity array.  Returns (filtered_arr, mode_str).
+    intensity array.  Returns (filtered_arr, mode_str, bad_mask).
 
     Parameters
     ----------
@@ -550,7 +556,7 @@ def _apply_mirror_filter(arr, vel_arr, mag_arr, x_arr, y_arr, event_mask, channe
 
     if _hv_pct <= VEL_BIMODAL_PCT:
         return arr.copy(), (f'skipped: {100*_hv_pct:.1f}% {channel_label}>vel '
-                            f'(unimodal — no artifact detected)')
+                            f'(unimodal — no artifact detected)'), np.zeros(n, dtype=bool)
 
     # ── Condition 1: velocity ─────────────────────────────────────────────────
     cond1 = (vel_arr > VEL_THRESH) & ~np.isnan(vel_arr)
@@ -600,7 +606,7 @@ def _apply_mirror_filter(arr, vel_arr, mag_arr, x_arr, y_arr, event_mask, channe
             f'removed {bad.sum()} frames '
             f'[c1:vel>{VEL_THRESH} | c2:{sp_note} | c3:{mag_note} | '
             f'c4:±{TEMPORAL_WINDOW}fr≥{TEMPORAL_MIN_N}nbr]')
-    return filtered, mode
+    return filtered, mode, bad
 
 
 def _load_intensity_from_summary(animal_folder):
@@ -687,12 +693,15 @@ def _load_intensity_from_summary(animal_folder):
         nose_arr_all = np.full(n, np.nan)
 
     # ── 4-condition mirror-reflection filter — Nose ───────────────────────────
+    # Per-tracker mirror-removal masks (default all-False; each reassigned if its filter runs)
+    bad_nose = bad_ear0 = bad_ear1 = bad_eye0 = bad_eye1 = np.zeros(n, dtype=bool)
+
     vel_nose_mode = 'skipped (no Velocity column)'
     if nose_df is not None and 'Velocity' in nose_df.columns:
         _bul_mask = ((nose_df['NoseEvent'] == 'Bul').values
                      if 'NoseEvent' in nose_df.columns
                      else np.zeros(n, dtype=bool))
-        nose_arr_all, vel_nose_mode = _apply_mirror_filter(
+        nose_arr_all, vel_nose_mode, bad_nose = _apply_mirror_filter(
             nose_arr_all,
             _col(nose_df, 'Velocity'),
             _col(nose_df, 'Magnitude Area'),
@@ -708,7 +717,7 @@ def _load_intensity_from_summary(animal_folder):
         _ear0_bl = ((ear_df['Ear0Event'] == 'BL').values
                     if 'Ear0Event' in ear_df.columns
                     else np.zeros(n, dtype=bool))
-        ear_int_0, vel_ear0_mode = _apply_mirror_filter(
+        ear_int_0, vel_ear0_mode, bad_ear0 = _apply_mirror_filter(
             ear_int_0,
             _col(ear_df, 'Velocity 0'),
             _col(ear_df, 'Magnitude Area 0'),
@@ -720,7 +729,7 @@ def _load_intensity_from_summary(animal_folder):
         _ear1_bl = ((ear_df['Ear1Event'] == 'BL').values
                     if 'Ear1Event' in ear_df.columns
                     else np.zeros(n, dtype=bool))
-        ear_int_1, vel_ear1_mode = _apply_mirror_filter(
+        ear_int_1, vel_ear1_mode, bad_ear1 = _apply_mirror_filter(
             ear_int_1,
             _col(ear_df, 'Velocity 1'),
             _col(ear_df, 'Magnitude Area 1'),
@@ -739,7 +748,7 @@ def _load_intensity_from_summary(animal_folder):
         _eye0_ot = ((eye_df['Eye0Event'] == 'OT').values
                     if 'Eye0Event' in eye_df.columns
                     else np.zeros(n, dtype=bool))
-        eye_int_0, vel_eye0_mode = _apply_mirror_filter(
+        eye_int_0, vel_eye0_mode, bad_eye0 = _apply_mirror_filter(
             eye_int_0,
             _col(eye_df, 'Velocity 0'),
             _col(eye_df, 'Magnitude Area 0'),
@@ -751,7 +760,7 @@ def _load_intensity_from_summary(animal_folder):
         _eye1_ot = ((eye_df['Eye1Event'] == 'OT').values
                     if 'Eye1Event' in eye_df.columns
                     else np.zeros(n, dtype=bool))
-        eye_int_1, vel_eye1_mode = _apply_mirror_filter(
+        eye_int_1, vel_eye1_mode, bad_eye1 = _apply_mirror_filter(
             eye_int_1,
             _col(eye_df, 'Velocity 1'),
             _col(eye_df, 'Magnitude Area 1'),
@@ -762,6 +771,12 @@ def _load_intensity_from_summary(animal_folder):
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', RuntimeWarning)
         eye_arr_all = np.nanmean(np.stack([eye_int_0, eye_int_1], axis=1), axis=1)
+
+    # Region-level mirror-removal masks (a region frame is "removed" if the mirror
+    # filter dropped ANY of its trackers at that frame)
+    ear_mirror_removed  = bad_ear0 | bad_ear1
+    eye_mirror_removed  = bad_eye0 | bad_eye1
+    nose_mirror_removed = bad_nose
 
     vel_filter_mode = (f'nose: {vel_nose_mode} | '
                        f'ear0: {vel_ear0_mode} | ear1: {vel_ear1_mode} | '
@@ -821,12 +836,15 @@ def _load_intensity_from_summary(animal_folder):
         filter_source = f'all_events (event columns not found) | vel filter: {vel_filter_mode}'
 
     result = {
-        'time':           time,
-        'ear_intensity':  ear_arr,
-        'eye_intensity':  eye_arr,
-        'nose_intensity': nose_arr,
-        'n_frames':       n,
-        'filter_source':  filter_source,
+        'time':                time,
+        'ear_intensity':       ear_arr,
+        'eye_intensity':       eye_arr,
+        'nose_intensity':      nose_arr,
+        'ear_mirror_removed':  ear_mirror_removed,
+        'eye_mirror_removed':  eye_mirror_removed,
+        'nose_mirror_removed': nose_mirror_removed,
+        'n_frames':            n,
+        'filter_source':       filter_source,
     }
     _save_to_cache(folder, result)
     return result
@@ -970,23 +988,30 @@ def compute_overall_pain_score(data):
 # Per-frame pain score — causal rolling window with trimmed mean
 # ============================================================================
 
-def compute_per_frame_pain_scores(data, lookback=60):
+def compute_per_frame_pain_scores_detailed(data, lookback=60):
     '''
-    Compute a pain score for every frame using a causal (backward-looking)
-    rolling window of `lookback` frames ending at the current frame.
+    Compute the per-frame pain score AND every intermediate quantity, so that a
+    reviewer can trace each frame end to end.
 
-    Uses a 10%-trimmed mean (drops the top 10% of intensity values per window)
-    to suppress tracking-artifact frames that have anomalously high intensity.
-    Bad frames (e.g., tracker detecting wrong region) produce intensity values
-    3x+ the normal range, which would otherwise pull the score to -100.
+    For every frame f the score uses a causal (backward-looking) window of
+    `lookback` frames ending at f — a 2-second / 60-frame window at 30 fps.
+    Within that window each channel's intensity is reduced by a 10%-trimmed mean
+    (drops the top 10% of values, suppressing tracking-artifact frames whose
+    intensity is 3x+ the normal range). Then per-channel Z = (CNO_mean - x)/CNO_std,
+    a weight-renormalized raw score over the available channels, and a 0-100
+    normalization pinned to baseline (0) and 1 mg/kg CNO (100).
 
-    lookback=60 gives a 2-second window at 30fps.
-    Frames 0..lookback-2 are NaN (insufficient history).
-    Returns a numpy array of shape (n_frames,).
+    Frames 0..lookback-2 have pain_score NaN (insufficient history).
+
+    Returns a dict of equal-length (n_frames) arrays:
+      frame, time_s, win_start_frame, win_end_frame, win_start_s, win_end_s,
+      ear_2s_mean, eye_2s_mean, nose_2s_mean, Z_ear, Z_eye, Z_nose,
+      raw_score, pain_score
     '''
     ear  = data['ear_intensity']
     eye  = data['eye_intensity']
     nose = data['nose_intensity']
+    t    = np.asarray(data['time'], dtype=float)
     n    = data['n_frames']
     lb   = lookback
 
@@ -1028,7 +1053,344 @@ def compute_per_frame_pain_scores(data, lookback=60):
         100.0 * (raw - BASELINE_RAW_SCORE) / (CNO_1MG_RAW_SCORE - BASELINE_RAW_SCORE),
         np.nan,
     )
-    return scores
+
+    # 2 s (lookback-frame) causal window bounds for every frame
+    frame     = np.arange(n)
+    win_start = np.maximum(0, frame - lb + 1)
+    win_end   = frame
+    _tidx     = lambda idx: t[np.clip(idx, 0, n - 1)] if n > 0 else np.array([])
+    return {
+        'frame':           frame,
+        'time_s':          t,
+        'win_start_frame': win_start,
+        'win_end_frame':   win_end,
+        'win_start_s':     _tidx(win_start),
+        'win_end_s':       _tidx(win_end),
+        'ear_intensity_raw':  ear,
+        'eye_intensity_raw':  eye,
+        'nose_intensity_raw': nose,
+        'ear_2s_mean':     ear_m,
+        'eye_2s_mean':     eye_m,
+        'nose_2s_mean':    nose_m,
+        'Z_ear':           Z_ear,
+        'Z_eye':           Z_eye,
+        'Z_nose':          Z_nose,
+        'raw_score':       raw,
+        'pain_score':      scores,
+    }
+
+
+# Column order for the per-frame traceability table
+_PER_FRAME_COLUMNS = [
+    'frame', 'time_s', 'win_start_frame', 'win_end_frame', 'win_start_s', 'win_end_s',
+    'ear_intensity_raw', 'eye_intensity_raw', 'nose_intensity_raw',
+    'ear_2s_mean', 'eye_2s_mean', 'nose_2s_mean', 'Z_ear', 'Z_eye', 'Z_nose',
+    'raw_score', 'pain_score',
+]
+
+
+def per_frame_pain_dataframe(data, lookback=60):
+    '''One row per frame with the full 2 s-window breakdown (see
+    compute_per_frame_pain_scores_detailed). Full precision — a raw traceability
+    table; averaging pain_score within a 3000-frame window reproduces the
+    corresponding row of compute_windowed_pain_scores.'''
+    d = compute_per_frame_pain_scores_detailed(data, lookback=lookback)
+    return pd.DataFrame({c: d[c] for c in _PER_FRAME_COLUMNS})
+
+
+def compute_per_frame_pain_scores(data, lookback=60):
+    '''Per-frame pain score as a numpy array of shape (n_frames,). Thin wrapper
+    over compute_per_frame_pain_scores_detailed (returns only the pain_score
+    column) — public behaviour is unchanged.'''
+    return compute_per_frame_pain_scores_detailed(data, lookback=lookback)['pain_score']
+
+
+# ============================================================================
+# Pain-score output writer (shared by GUI button and headless batch driver)
+# ============================================================================
+
+_WINDOW_FIELDS = ['pain_score', 'ear_intensity', 'eye_intensity', 'nose_intensity',
+                  'Z_ear', 'Z_eye', 'Z_nose', 'raw_score']
+
+
+def _window_range_summary(windows, w_start, w_end):
+    '''Per-field mean over the windows kept in [w_start, w_end] (1-based, inclusive).
+    Same-source / same-precision (matches Figure 6): each window field is rounded to 2 dp
+    FIRST (the single displayed source), then averaged, then the mean is rounded to 2 dp.
+    So averaging the shown 2 dp window rows reproduces this summary exactly, and pain_score
+    equals the Figure 6 per-recording value (0-500 s = mean of the 2 dp windows 1..5).'''
+    kept = [w for w in windows if w_start <= w['window'] <= w_end]
+    out = {'n_windows_used': len(kept)}
+    for f in _WINDOW_FIELDS:
+        vals = [round(w[f], 2) for w in kept if np.isfinite(w.get(f, np.nan))]
+        out[f] = round(float(np.mean(vals)), 2) if vals else float('nan')
+    return out
+
+
+def write_pain_score_outputs(records, output_path, window_range=None):
+    '''Write the full pain-score output set for a batch of records to output_path.
+    Shared by the GUI "Calculate" button and the headless batch driver so both
+    produce byte-identical artifacts:
+      - pain_scores.xlsx             (one sheet per animal: per-window rows + Summary)
+      - pain_scores_per_frame.xlsx   (one sheet per animal: per-frame 2 s-window breakdown)
+      - pain_score_chart.png         (pain score vs window, one line per animal)
+      - overall_pain_score_chart.png (per-animal mean bar)
+    `records` = list of {'name', 'folder', 'data', 'windows'}. Returns output paths.
+
+    window_range : (w_start, w_end) 1-based inclusive window indices, or None
+        None (default, GUI full recording) -> every window/frame is written; the Summary
+        overall + the mean bar use the WHOLE recording.
+        (w_start, w_end) -> the output is RESTRICTED to those windows (Figure 6 uses (1, 5)
+        = 0-500 s). Then EVERYTHING is consistent over that range: the per-window sheets
+        contain only the kept windows, the per-frame sheets only the kept frames, the
+        Summary reports the per-field mean of the kept windows (so averaging the shown
+        window rows reproduces it, and pain_score matches Figure 6), and both charts are
+        drawn over the kept range. A YELLOW note cell states the range in every sheet.
+    '''
+    from openpyxl.styles import PatternFill, Font
+    YELLOW = PatternFill('solid', fgColor='FFFF00')
+    BOLD   = Font(bold=True)
+
+    wr = window_range  # (w_start, w_end) inclusive, 1-based; or None
+
+    def kept(windows):
+        return list(windows) if wr is None else [w for w in windows
+                                                 if wr[0] <= w['window'] <= wr[1]]
+
+    # human range label + note (only in restricted mode).
+    # Derive from the REQUESTED bounds (deterministic 100 s @30fps windows), NOT from the
+    # first record, so a heterogeneous batch cannot mislabel later animals.
+    rng_lbl = ''
+    note = None
+    if wr is not None:
+        sec_per_win = FRAME_WINDOW / 30.0
+        s0, e1 = (wr[0] - 1) * sec_per_win, wr[1] * sec_per_win
+        rng_lbl = f'{s0:.0f}-{e1:.0f} s'
+        note = (f'RESTRICTED to {rng_lbl} (windows {wr[0]}-{wr[1]}) = the analysis window '
+                f'used in Figure 6. Every row, number and chart in this file is computed '
+                f'over {rng_lbl} ONLY; later time is excluded.')
+
+    # ── Excel (per-window) ─────────────────────────────────────────────────
+    xlsx_path = os.path.join(output_path, 'pain_scores.xlsx')
+    writer = pd.ExcelWriter(xlsx_path, engine='openpyxl')
+    summary_rows = []
+    for rec in records:
+        kw = kept(rec['windows'])
+        df = pd.DataFrame(kw)
+        if wr is not None:                       # 2 dp single source (matches Figure 6)
+            for f in _WINDOW_FIELDS:
+                if f in df.columns:
+                    df[f] = df[f].round(2)
+        df.to_excel(writer, sheet_name=rec['name'][:31], index=False)
+        if wr is None:
+            overall = compute_overall_pain_score(rec['data'])
+            summary_rows.append({
+                'animal':                 rec['name'],
+                'n_windows':              len(kw),
+                'overall_pain_score':     round(overall['pain_score'], 4),
+                'overall_ear_intensity':  round(overall['ear_intensity'], 4),
+                'overall_eye_intensity':  round(overall['eye_intensity'], 4),
+                'overall_nose_intensity': round(overall['nose_intensity'], 4),
+                'overall_Z_ear':          round(overall['Z_ear'], 4),
+                'overall_Z_eye':          round(overall['Z_eye'], 4),
+                'overall_Z_nose':         round(overall['Z_nose'], 4),
+                'overall_raw_score':      round(overall['raw_score'], 4),
+            })
+        else:
+            s = _window_range_summary(rec['windows'], wr[0], wr[1])
+            summary_rows.append({
+                'animal':          rec['name'],
+                'time_range':      rng_lbl,
+                'n_windows_used':  s['n_windows_used'],
+                'pain_score':      round(s['pain_score'], 4),
+                'ear_intensity':   round(s['ear_intensity'], 4),
+                'eye_intensity':   round(s['eye_intensity'], 4),
+                'nose_intensity':  round(s['nose_intensity'], 4),
+                'Z_ear':           round(s['Z_ear'], 4),
+                'Z_eye':           round(s['Z_eye'], 4),
+                'Z_nose':          round(s['Z_nose'], 4),
+                'raw_score':       round(s['raw_score'], 4),
+            })
+    pd.DataFrame(summary_rows).to_excel(writer, sheet_name='Summary', index=False)
+
+    # restricted mode: uniform 2-dp display ('0.00'), yellow note, highlight pain_score
+    if wr is not None:
+        FMT = '0.00'
+        win_fmt = set(_WINDOW_FIELDS) | {'time_start', 'time_end', 'time_mid'}
+
+        def _fmt_cols(ws, names):
+            '''Force '0.00' on every column whose header is in *names*; return the header list.'''
+            hdr = [ws.cell(row=1, column=c).value for c in range(1, ws.max_column + 1)]
+            for c, name in enumerate(hdr, start=1):
+                if name in names:
+                    for r in range(2, ws.max_row + 1):
+                        ws.cell(row=r, column=c).number_format = FMT
+            return hdr
+
+        for rec in records:
+            ws = writer.sheets[rec['name'][:31]]
+            hdr = _fmt_cols(ws, win_fmt)
+            if 'pain_score' in hdr:
+                pcol = hdr.index('pain_score') + 1
+                for r in range(1, ws.max_row + 1):
+                    ws.cell(row=r, column=pcol).fill = YELLOW
+            nc = ws.cell(row=1, column=ws.max_column + 2, value=note)
+            nc.font = BOLD; nc.fill = YELLOW
+        sws = writer.sheets['Summary']
+        hdr = _fmt_cols(sws, set(_WINDOW_FIELDS))
+        if 'pain_score' in hdr:
+            pcol = hdr.index('pain_score') + 1
+            for r in range(1, sws.max_row + 1):
+                sws.cell(row=r, column=pcol).fill = YELLOW
+            sws.cell(row=1, column=pcol).font = BOLD
+        snc = sws.cell(row=1, column=sws.max_column + 2,
+                       value=note + ' `pain_score` (yellow) = mean of the shown window '
+                             'rows = the value plotted in Figure 6.')
+        snc.font = BOLD; snc.fill = YELLOW
+    writer.close()
+
+    # ── Per-frame pain score (2 s / 60-frame causal window) ────────────────
+    ORANGE = PatternFill('solid', fgColor='FFC000')
+    ORANGE_LEGEND = (
+        'ORANGE = the mirror-reflection filter removed THIS ORGAN (ear / eye / nose) at this '
+        'frame. Removal is PER ORGAN, NOT per frame: only the affected organ value is dropped; '
+        'the other organs still count and this frame pain score is recomputed from the remaining '
+        'organs (a frame is fully excluded only if all three organs are removed at once). '
+        'blank + orange = the organ value is fully gone here (nose removed, or BOTH ear/eye '
+        'trackers). value + orange = only one of the organ two trackers (the reflection) was '
+        'dropped, so the organ value is recomputed from the surviving tracker.')
+    PF_NUMFMT = '0.00'   # uniform 2-dp DISPLAY; stored values stay full precision (== actual)
+    PF_INT_COLS = ('frame', 'win_start_frame', 'win_end_frame')
+    _RAW_MASK = {'ear_intensity_raw': 'ear_mirror_removed',
+                 'eye_intensity_raw': 'eye_mirror_removed',
+                 'nose_intensity_raw': 'nose_mirror_removed'}
+    pf_path = os.path.join(output_path, 'pain_scores_per_frame.xlsx')
+    pf_writer = pd.ExcelWriter(pf_path, engine='openpyxl')
+    for rec in records:
+        pdf = per_frame_pain_dataframe(rec['data'])
+        if wr is not None:                                    # keep only frames in range
+            f0, f1 = (wr[0] - 1) * FRAME_WINDOW, wr[1] * FRAME_WINDOW
+            pdf = pdf[(pdf['frame'] >= f0) & (pdf['frame'] < f1)]
+        pdf.to_excel(pf_writer, sheet_name=rec['name'][:31], index=False)
+        ws = pf_writer.sheets[rec['name'][:31]]
+        hdr = [ws.cell(row=1, column=c).value for c in range(1, ws.max_column + 1)]
+        n_data_cols = len(hdr)
+        frames = pdf['frame'].to_numpy()
+        note_col = n_data_cols + 2
+        # orange-fill the frames the mirror filter removed, per region
+        for raw_col, mask_key in _RAW_MASK.items():
+            if raw_col not in hdr or mask_key not in rec['data']:
+                continue
+            col = hdr.index(raw_col) + 1
+            mask = np.asarray(rec['data'][mask_key], dtype=bool)
+            for i, f in enumerate(frames):
+                if f < len(mask) and mask[f]:
+                    ws.cell(row=i + 2, column=col).fill = ORANGE
+        # uniform 2-dp display on every numeric (non-integer) data column
+        int_idx = {hdr.index(c) for c in PF_INT_COLS if c in hdr}
+        for row in ws.iter_rows(min_row=2, max_col=n_data_cols):
+            for j, cell in enumerate(row):
+                if j not in int_idx and cell.value is not None:
+                    cell.number_format = PF_NUMFMT
+        lc = ws.cell(row=1, column=note_col, value=ORANGE_LEGEND)
+        lc.font = BOLD; lc.fill = ORANGE
+        if wr is not None:                                    # yellow range note (row 2), pain_score header
+            rc = ws.cell(row=2, column=note_col,
+                         value=note + ' Per-frame values are shown to 2 dp; the stored value '
+                               'is full precision (equals the actual computed value).')
+            rc.font = BOLD; rc.fill = YELLOW
+            if 'pain_score' in hdr:
+                ws.cell(row=1, column=hdr.index('pain_score') + 1).fill = YELLOW
+    pf_writer.close()
+
+    # ── Chart: pain score over time (per window) ───────────────────────────
+    n_animals = len(records)
+    fig, ax = plt.subplots(figsize=(13, 5))
+    cmap = plt.get_cmap('tab10')
+    all_scores = []
+    for i, rec in enumerate(records):
+        windows = kept(rec['windows'])
+        x = [w['window'] for w in windows]
+        y = [round(w['pain_score'], 2) if wr is not None else w['pain_score']
+             for w in windows]                      # 2 dp source in restricted mode
+        all_scores.extend(y)
+        ax.plot(x, y, marker='o', markersize=6, label=rec['name'], color=cmap(i % 10),
+                linewidth=1.8 if n_animals == 1 else 1.4,
+                markeredgecolor='black', markeredgewidth=0.6, alpha=0.9)
+    ax.axhline(y=0,   color='gray', linestyle='--', linewidth=1.2, alpha=0.6,
+               label='Baseline (true baseline mice)')
+    ax.axhline(y=100, color='red',  linestyle='--', linewidth=1.2, alpha=0.4,
+               label='1 mg/kg CNO reference')
+    ax.set_xlabel(f'Time Window  (each = {FRAME_WINDOW} frames)', fontsize=11, fontweight='bold')
+    ax.set_ylabel('Pain Score', fontsize=11, fontweight='bold')
+    title = ('Pain Score Over Time' if n_animals == 1
+             else f'Pain Score Comparison  —  {n_animals} Animals')
+    win_note = f'  |  {rng_lbl} (windows {wr[0]}-{wr[1]})' if wr is not None else ''
+    ax.set_title(
+        f'{title}\n'
+        f'W_ear={W_EAR:.3f}  |  W_eye={W_EYE:.3f}  |  W_nose={W_NOSE:.3f}  '
+        f'|  CNO-calibrated  |  Window={FRAME_WINDOW} frames{win_note}',
+        fontsize=11,
+    )
+    finite_scores = [s for s in all_scores if np.isfinite(s)]
+    if finite_scores:
+        ax.set_ylim(min(min(finite_scores), 0) - 8, max(max(finite_scores), 100) + 8)
+    if all_scores:
+        win_vals = [w['window'] for rec in records for w in kept(rec['windows'])]
+        lo, hi = min(win_vals), max(win_vals)
+        if hi - lo <= 20:
+            ax.set_xticks(range(int(lo), int(hi) + 1))
+    ax.legend(loc='upper right', fontsize=8, ncol=max(1, (n_animals + 2) // 8))
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    chart_path = os.path.join(output_path, 'pain_score_chart.png')
+    plt.savefig(chart_path, dpi=150)
+    plt.close()
+
+    # ── Overall Pain Score bar chart ───────────────────────────────────────
+    animal_names = [rec['name'] for rec in records]
+    if wr is None:
+        mean_scores = [compute_overall_pain_score(rec['data'])['pain_score'] for rec in records]
+        bar_ylabel  = 'Overall Pain Score (full-recording mean)'
+        bar_title   = f'Overall Pain Score  —  {n_animals} Animal(s)'
+    else:
+        mean_scores = [_window_range_summary(rec['windows'], wr[0], wr[1])['pain_score']
+                       for rec in records]
+        bar_ylabel  = f'Pain Score ({rng_lbl} mean)'
+        bar_title   = f'Pain Score ({rng_lbl})  —  {n_animals} Animal(s)'
+    fig2, ax2 = plt.subplots(figsize=(max(6, n_animals * 1.2 + 2), 5))
+    x_pos  = np.arange(n_animals)
+    colors = [cmap(i % 10) for i in range(n_animals)]
+    plot_means = [m if np.isfinite(m) else 0.0 for m in mean_scores]
+    bars = ax2.bar(x_pos, plot_means, color=colors, edgecolor='black', linewidth=0.8, zorder=3)
+    for bar, val in zip(bars, mean_scores):
+        label = f'{val:.1f}' if np.isfinite(val) else 'N/A'
+        ax2.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1,
+                 label, ha='center', va='bottom', fontsize=9, fontweight='bold')
+    ax2.axhline(y=0,   color='gray', linestyle='--', linewidth=1.2, alpha=0.6,
+                label='Baseline (0)', zorder=2)
+    ax2.axhline(y=100, color='red',  linestyle='--', linewidth=1.2, alpha=0.4,
+                label='1 mg/kg CNO (100)', zorder=2)
+    ax2.set_xticks(x_pos)
+    ax2.set_xticklabels(animal_names, rotation=30, ha='right', fontsize=9)
+    ax2.set_ylabel(bar_ylabel, fontsize=11, fontweight='bold')
+    ax2.set_title(
+        f'{bar_title}\n'
+        f'W_ear={W_EAR:.3f}  |  W_eye={W_EYE:.3f}  |  W_nose={W_NOSE:.3f}  |  CNO-calibrated',
+        fontsize=11,
+    )
+    finite_means = [s for s in mean_scores if np.isfinite(s)]
+    all_mean_scores = finite_means + [0, 100]
+    ax2.set_ylim(min(all_mean_scores) - 15, max(all_mean_scores) + 15)
+    ax2.legend(fontsize=9)
+    ax2.grid(True, axis='y', alpha=0.3, zorder=0)
+    plt.tight_layout()
+    overall_chart_path = os.path.join(output_path, 'overall_pain_score_chart.png')
+    plt.savefig(overall_chart_path, dpi=150)
+    plt.close()
+
+    return {'pain_scores': xlsx_path, 'pain_scores_per_frame': pf_path,
+            'pain_score_chart': chart_path, 'overall_pain_score_chart': overall_chart_path}
 
 
 # ============================================================================
@@ -1692,6 +2054,29 @@ class WindowLv2_PainScore(wx.Frame):
         boxsizer.Add(module_ref, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
         boxsizer.Add(0, 10, 0)
 
+        # ── Row 3b: Analysis time range (seconds) ─────────────────────────
+        module_range = wx.BoxSizer(wx.HORIZONTAL)
+        self.chk_range = wx.CheckBox(panel, label='Restrict analysis to time range (s):',
+                                     size=(300, -1))
+        self.chk_range.SetValue(True)          # default = 0-500 s (the Figure 6 window)
+        self.spin_start = wx.SpinCtrl(panel, min=0, max=100000, initial=0,   size=(90, -1))
+        lbl_to = wx.StaticText(panel, label='to')
+        self.spin_end   = wx.SpinCtrl(panel, min=1, max=100000, initial=500, size=(90, -1))
+        sec_per_win = FRAME_WINDOW / 30.0
+        for w in (self.chk_range, self.spin_start, self.spin_end):
+            wx.Window.SetToolTip(
+                w,
+                f'Restrict every output (per-window sheet, per-frame sheet, Summary and both\n'
+                f'charts) to this time range. The range snaps to whole {sec_per_win:.0f} s '
+                f'windows.\nFigure 6 uses 0 to 500 s (windows 1-5). Uncheck for the full recording.',
+            )
+        module_range.Add(self.chk_range,  0, wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 10)
+        module_range.Add(self.spin_start, 0, wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 5)
+        module_range.Add(lbl_to,          0, wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 5)
+        module_range.Add(self.spin_end,   0, wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 5)
+        boxsizer.Add(module_range, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
+        boxsizer.Add(0, 10, 0)
+
         # ── Row 4: Output folder ──────────────────────────────────────────
         module_out = wx.BoxSizer(wx.HORIZONTAL)
         button_out = wx.Button(panel, label='Select a folder to store\nthe results', size=(300, 40))
@@ -1727,8 +2112,8 @@ class WindowLv2_PainScore(wx.Frame):
             button_overlay,
             'Select one analyzed video (Module A) and one animal\'s summary data (Module B) '
             'to generate a new video with per-frame pain score overlaid in the top-right corner.\n'
-            'Score is computed using a ±15-frame rolling window.\n'
-            'First and last 15 frames will have no overlay.',
+            'Score is computed using a causal 60-frame (2 s @30fps) look-back window.\n'
+            'The first 59 frames have no score and no overlay.',
         )
         boxsizer.Add(button_overlay, 0, wx.RIGHT | wx.ALIGN_RIGHT, 90)
         boxsizer.Add(0, 10, 0)
@@ -1869,148 +2254,55 @@ class WindowLv2_PainScore(wx.Frame):
                           wx.OK | wx.ICON_WARNING)
             return
 
+        # Optional time-range restriction -> whole-window (w_start, w_end)
+        window_range = None
+        range_msg = 'full recording'
+        if self.chk_range.GetValue():
+            start_s = float(self.spin_start.GetValue())
+            end_s   = float(self.spin_end.GetValue())
+            if end_s <= start_s:
+                wx.MessageBox('End time must be greater than start time.', 'Invalid Range',
+                              wx.OK | wx.ICON_WARNING)
+                return
+            sec_per_win = FRAME_WINDOW / 30.0            # 100 s per window @30fps
+            w_start = int(start_s // sec_per_win) + 1
+            w_end   = int(np.ceil(end_s / sec_per_win))
+            window_range = (w_start, w_end)
+            snap_start = (w_start - 1) * sec_per_win     # window bounds actually analyzed
+            snap_end   = w_end * sec_per_win
+            range_msg = (f'{start_s:.0f}-{end_s:.0f} s  ->  windows {w_start}-{w_end} '
+                         f'({snap_start:.0f}-{snap_end:.0f} s of data used)')
+            # Non-zero start: the 2 s causal look-back reaches ~59 frames before the range,
+            # so the first ~2 s of the range is not fully self-contained. (Figure 6 uses
+            # 0-500 s / start=0, which is unaffected.) Warn and let the user decide.
+            if w_start > 1:
+                proceed = wx.MessageBox(
+                    f'The range starts at {start_s:.0f} s (not 0). Pain score uses a causal '
+                    f'2 s (60-frame) look-back, so the first ~2 s of the range still reflects '
+                    f'a little data from just before {start_s:.0f} s.\n\n'
+                    f'This is fine for a full 0 to N s window (e.g. Figure 6 uses 0-500 s). '
+                    f'Continue anyway?',
+                    'Range does not start at 0 s', wx.OK | wx.CANCEL | wx.ICON_WARNING)
+                if proceed != wx.OK:
+                    return
+
         try:
-            # ── Excel ─────────────────────────────────────────────────────
-            xlsx_path = os.path.join(self.output_path, 'pain_scores.xlsx')
-            writer = pd.ExcelWriter(xlsx_path, engine='openpyxl')
-
-            summary_rows = []
-            for rec in self.animal_records:
-                windows = rec['windows']
-                df = pd.DataFrame(windows)
-                df.to_excel(writer, sheet_name=rec['name'][:31], index=False)
-                overall = compute_overall_pain_score(rec['data'])
-                summary_rows.append({
-                    'animal':               rec['name'],
-                    'n_windows':            len(windows),
-                    'overall_pain_score':   round(overall['pain_score'], 4),
-                    'overall_ear_intensity': round(overall['ear_intensity'], 4),
-                    'overall_eye_intensity': round(overall['eye_intensity'], 4),
-                    'overall_nose_intensity': round(overall['nose_intensity'], 4),
-                    'overall_Z_ear':        round(overall['Z_ear'], 4),
-                    'overall_Z_eye':        round(overall['Z_eye'], 4),
-                    'overall_Z_nose':       round(overall['Z_nose'], 4),
-                    'overall_raw_score':    round(overall['raw_score'], 4),
-                })
-
-            pd.DataFrame(summary_rows).to_excel(writer, sheet_name='Summary', index=False)
-            writer.close()
-
-            # ── Chart ─────────────────────────────────────────────────────
+            # All file/chart writing is shared with the headless batch driver via
+            # write_pain_score_outputs() so the GUI and scripted output are identical.
+            write_pain_score_outputs(self.animal_records, self.output_path,
+                                     window_range=window_range)
             n_animals = len(self.animal_records)
-            fig, ax = plt.subplots(figsize=(13, 5))
-            cmap = plt.get_cmap('tab10')
-
-            all_scores = []
-            for i, rec in enumerate(self.animal_records):
-                windows = rec['windows']
-                x = [w['window'] for w in windows]
-                y = [w['pain_score'] for w in windows]
-                all_scores.extend(y)
-
-                color = cmap(i % 10)
-                ax.plot(x, y,
-                        marker='o', markersize=6,
-                        label=rec['name'], color=color,
-                        linewidth=1.8 if n_animals == 1 else 1.4,
-                        markeredgecolor='black', markeredgewidth=0.6,
-                        alpha=0.9)
-
-            # Reference lines (same style as capsaicin_pain_score_temporal.py)
-            ax.axhline(y=0,   color='gray', linestyle='--', linewidth=1.2, alpha=0.6,
-                       label='Baseline (true baseline mice)')
-            ax.axhline(y=100, color='red',  linestyle='--', linewidth=1.2, alpha=0.4,
-                       label='1 mg/kg CNO reference')
-
-            ax.set_xlabel(f'Time Window  (each = {FRAME_WINDOW} frames)', fontsize=11, fontweight='bold')
-            ax.set_ylabel('Pain Score', fontsize=11, fontweight='bold')
-            title = ('Pain Score Over Time' if n_animals == 1
-                     else f'Pain Score Comparison  —  {n_animals} Animals')
-            ax.set_title(
-                f'{title}\n'
-                f'W_ear={W_EAR:.3f}  |  W_eye={W_EYE:.3f}  |  W_nose={W_NOSE:.3f}  '
-                f'|  CNO-calibrated  |  Window={FRAME_WINDOW} frames',
-                fontsize=11,
-            )
-
-            # Dynamic y-axis with padding around data and reference lines
-            finite_scores = [s for s in all_scores if np.isfinite(s)]
-            if finite_scores:
-                y_lo = min(min(finite_scores), 0) - 8
-                y_hi = max(max(finite_scores), 100) + 8
-                ax.set_ylim(y_lo, y_hi)
-
-            # Integer x-ticks if not too many windows
-            max_win = max(w['window'] for rec in self.animal_records for w in rec['windows'])
-            if max_win <= 20:
-                ax.set_xticks(range(1, int(max_win) + 1))
-
-            ax.legend(loc='upper right', fontsize=8, ncol=max(1, (n_animals + 2) // 8))
-            ax.grid(True, alpha=0.3)
-            plt.tight_layout()
-
-            chart_path = os.path.join(self.output_path, 'pain_score_chart.png')
-            plt.savefig(chart_path, dpi=150)
-            plt.close()
-
-            # ── Overall Pain Score bar chart ───────────────────────────────
-            animal_names = [rec['name'] for rec in self.animal_records]
-            mean_scores  = []
-            for rec in self.animal_records:
-                overall = compute_overall_pain_score(rec['data'])
-                mean_scores.append(overall['pain_score'])
-
-            fig2, ax2 = plt.subplots(figsize=(max(6, n_animals * 1.2 + 2), 5))
-            x_pos  = np.arange(n_animals)
-            colors = [cmap(i % 10) for i in range(n_animals)]
-
-            # Use 0 as bar height for NaN animals so bars are visible (labelled N/A)
-            plot_means = [m if np.isfinite(m) else 0.0 for m in mean_scores]
-
-            bars = ax2.bar(x_pos, plot_means,
-                           color=colors, edgecolor='black', linewidth=0.8,
-                           zorder=3)
-
-            # Label each bar with its value or N/A
-            label_offset = 1
-            for bar, val in zip(bars, mean_scores):
-                label = f'{val:.1f}' if np.isfinite(val) else 'N/A'
-                ax2.text(bar.get_x() + bar.get_width() / 2,
-                         bar.get_height() + label_offset,
-                         label, ha='center', va='bottom', fontsize=9, fontweight='bold')
-
-            ax2.axhline(y=0,   color='gray', linestyle='--', linewidth=1.2, alpha=0.6,
-                        label='Baseline (0)', zorder=2)
-            ax2.axhline(y=100, color='red',  linestyle='--', linewidth=1.2, alpha=0.4,
-                        label='1 mg/kg CNO (100)', zorder=2)
-
-            ax2.set_xticks(x_pos)
-            ax2.set_xticklabels(animal_names, rotation=30, ha='right', fontsize=9)
-            ax2.set_ylabel('Overall Pain Score (full-recording mean)', fontsize=11, fontweight='bold')
-            ax2.set_title(
-                f'Overall Pain Score  —  {n_animals} Animal(s)\n'
-                f'W_ear={W_EAR:.3f}  |  W_eye={W_EYE:.3f}  |  W_nose={W_NOSE:.3f}  |  CNO-calibrated',
-                fontsize=11,
-            )
-
-            finite_means = [s for s in mean_scores if np.isfinite(s)]
-            all_mean_scores = finite_means + [0, 100]
-            y2_lo = min(all_mean_scores) - 15
-            y2_hi = max(all_mean_scores) + 15
-            ax2.set_ylim(y2_lo, y2_hi)
-            ax2.legend(fontsize=9)
-            ax2.grid(True, axis='y', alpha=0.3, zorder=0)
-            plt.tight_layout()
-
-            overall_chart_path = os.path.join(self.output_path, 'overall_pain_score_chart.png')
-            plt.savefig(overall_chart_path, dpi=150)
-            plt.close()
 
             wx.MessageBox(
-                f'Done!  {n_animals} animal(s) processed.\n\n'
-                f'Spreadsheet : pain_scores.xlsx\n'
+                f'Done!  {n_animals} animal(s) processed.\n'
+                f'Analysis range: {range_msg}\n\n'
+                f'Spreadsheets:\n'
+                f'  pain_scores.xlsx\n'
                 f'  — one sheet per animal (window, time, intensities, Z-scores, pain_score)\n'
-                f'  — "Summary" sheet (overall pain score from full-recording mean per animal)\n\n'
+                f'  — "Summary" sheet (per-animal pain score over the selected range)\n'
+                f'  pain_scores_per_frame.xlsx\n'
+                f'  — one sheet per animal; per-frame pain score with its 2 s (60-frame)\n'
+                f'    look-back window and full breakdown (win bounds, 2 s means, Z, raw, pain)\n\n'
                 f'Charts:\n'
                 f'  pain_score_chart.png         (pain score over time per window)\n'
                 f'  overall_pain_score_chart.png  (mean per animal)\n\n'
