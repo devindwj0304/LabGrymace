@@ -1182,9 +1182,10 @@ def write_pain_score_outputs(records, output_path, window_range=None):
                 if f in df.columns:
                     df[f] = df[f].round(2)
         df.to_excel(writer, sheet_name=rec['name'][:31], index=False)
+        ws = writer.sheets[rec['name'][:31]]
         if wr is None:
             overall = compute_overall_pain_score(rec['data'])
-            summary_rows.append({
+            srow = {
                 'animal':                 rec['name'],
                 'n_windows':              len(kw),
                 'overall_pain_score':     round(overall['pain_score'], 4),
@@ -1195,10 +1196,15 @@ def write_pain_score_outputs(records, output_path, window_range=None):
                 'overall_Z_eye':          round(overall['Z_eye'], 4),
                 'overall_Z_nose':         round(overall['Z_nose'], 4),
                 'overall_raw_score':      round(overall['raw_score'], 4),
-            })
+            }
+            avg_label = 'Overall (whole recording)'
+            avg_map = {'pain_score': 'overall_pain_score', 'ear_intensity': 'overall_ear_intensity',
+                       'eye_intensity': 'overall_eye_intensity', 'nose_intensity': 'overall_nose_intensity',
+                       'Z_ear': 'overall_Z_ear', 'Z_eye': 'overall_Z_eye', 'Z_nose': 'overall_Z_nose',
+                       'raw_score': 'overall_raw_score'}
         else:
             s = _window_range_summary(rec['windows'], wr[0], wr[1])
-            summary_rows.append({
+            srow = {
                 'animal':          rec['name'],
                 'time_range':      rng_lbl,
                 'n_windows_used':  s['n_windows_used'],
@@ -1210,7 +1216,24 @@ def write_pain_score_outputs(records, output_path, window_range=None):
                 'Z_eye':           round(s['Z_eye'], 4),
                 'Z_nose':          round(s['Z_nose'], 4),
                 'raw_score':       round(s['raw_score'], 4),
-            })
+            }
+            avg_label = f'Average ({rng_lbl})'
+            avg_map = {k: k for k in ('pain_score', 'ear_intensity', 'eye_intensity',
+                       'nose_intensity', 'Z_ear', 'Z_eye', 'Z_nose', 'raw_score')}
+        summary_rows.append(srow)
+
+        # Bottom row on the animal's own tab = its Summary row (SAME source dict, so
+        # the numbers are identical), so the mean pain score is visible without opening
+        # Summary. The label goes in the 'window' column (a string, not a window index),
+        # so downstream window-row parsers skip it. In restricted mode the later block
+        # applies the 0.00 format + yellow pain_score fill to this row too.
+        hdr = [c.value for c in ws[1]]
+        arow = ws.max_row + 1
+        lc = (hdr.index('window') + 1) if 'window' in hdr else 1
+        ws.cell(row=arow, column=lc, value=avg_label).font = BOLD
+        for col, key in avg_map.items():
+            if col in hdr:
+                ws.cell(row=arow, column=hdr.index(col) + 1, value=srow[key]).font = BOLD
     pd.DataFrame(summary_rows).to_excel(writer, sheet_name='Summary', index=False)
 
     # restricted mode: uniform 2-dp display ('0.00'), yellow note, highlight pain_score
@@ -1247,6 +1270,12 @@ def write_pain_score_outputs(records, output_path, window_range=None):
                        value=note + ' `pain_score` (yellow) = mean of the shown window '
                              'rows = the value plotted in Figure 6.')
         snc.font = BOLD; snc.fill = YELLOW
+
+    # Put Summary first so it's the tab users land on (per-animal averages up
+    # front, no scrolling to the last tab). GUI + driver share this writer.
+    wb = writer.book
+    wb.move_sheet('Summary', offset=-wb.sheetnames.index('Summary'))
+    wb.active = 0
     writer.close()
 
     # ── Per-frame pain score (2 s / 60-frame causal window) ────────────────
