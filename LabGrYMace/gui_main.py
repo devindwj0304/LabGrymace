@@ -2067,8 +2067,9 @@ class WindowLv2_PainScore(wx.Frame):
             wx.Window.SetToolTip(
                 w,
                 f'Restrict every output (per-window sheet, per-frame sheet, Summary and both\n'
-                f'charts) to this time range. The range snaps to whole {sec_per_win:.0f} s '
-                f'windows.\nFigure 6 uses 0 to 500 s (windows 1-5). Uncheck for the full recording.',
+                f'charts) to this time range. Enter any start/end seconds you like; the range\n'
+                f'snaps to whole {sec_per_win:.0f} s windows. Defaults to 0-500 s (windows 1-5).\n'
+                f'Uncheck for the full recording.',
             )
         module_range.Add(self.chk_range,  0, wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 10)
         module_range.Add(self.spin_start, 0, wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 5)
@@ -2280,7 +2281,7 @@ class WindowLv2_PainScore(wx.Frame):
                     f'The range starts at {start_s:.0f} s (not 0). Pain score uses a causal '
                     f'2 s (60-frame) look-back, so the first ~2 s of the range still reflects '
                     f'a little data from just before {start_s:.0f} s.\n\n'
-                    f'This is fine for a full 0 to N s window (e.g. Figure 6 uses 0-500 s). '
+                    f'This is fine for a full 0 to N s window (the default is 0-500 s). '
                     f'Continue anyway?',
                     'Range does not start at 0 s', wx.OK | wx.CANCEL | wx.ICON_WARNING)
                 if proceed != wx.OK:
