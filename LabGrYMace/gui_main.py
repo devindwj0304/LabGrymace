@@ -65,6 +65,14 @@ FRAME_WINDOW = 3000
 FALLBACK_THRESHOLD_PCT = 3.0
 USE_EVENT_FILTER = False   # False = all_events + mirror filter only; True = BL/OT/Bul masking
 
+# Mirror-reflection filter is OPT-IN. Default OFF: load_raw_data does NOT remove
+# any frames unless the caller (or GUI checkbox) explicitly turns it on. Turn it on
+# only when the LabGym tracker may have jumped to mirror reflections. See the GUI
+# "Apply mirror-reflection filter" checkbox and load_raw_data(apply_mirror_filter=...).
+# NOTE: the Figure 4E / Figure 6 repro scripts call load_raw_data(..., apply_mirror_filter=True)
+# explicitly, so the published figures are unaffected by this default.
+APPLY_MIRROR_FILTER = False
+
 # ── Adaptive nose mirror-reflection filter (4-condition) ─────────────────────
 # Glass-tube and similar reflective setups cause the nose centroid to alternate
 # between the real nose and its mirror image.  A frame is only removed when
@@ -245,6 +253,13 @@ def generate_summary_files(folder_path, output_dir=None):
     _merge_ear_positions(folder,  out / 'ear_summary.xlsx')
     _merge_eye_positions(folder,  out / 'eye_summary.xlsx')
 
+    # Add the YELLOW "merged intensity (feeds pain score)" column for reviewer
+    # traceability. Mirror filter ON = the published Figure 4E / Figure 6 convention.
+    try:
+        add_pain_score_merged_column(out, apply_mirror_filter=True)
+    except Exception:
+        pass
+
     # Clean up local temp directory
     try:
         shutil.rmtree(str(_tmpdir))
@@ -417,18 +432,23 @@ def _summary_to_intensity_array(df, event_mask, intensity_cols):
 
 
 _CACHE_FILE = '_labgrymace_cache.npz'
-_CACHE_VERSION = 18  # bump when filter logic changes to force cache rebuild
+_CACHE_VERSION = 19  # bump when filter logic changes to force cache rebuild
+                     # (19: added apply_mirror_filter flag to the cache)
 
 
-def _cache_is_valid(folder):
+def _cache_is_valid(folder, apply_mirror_filter=True):
     '''Return True if the .npz cache exists, matches the current version,
-    and is newer than all three source xlsx files.'''
+    was built with the same apply_mirror_filter setting, and is newer than all
+    three source xlsx files.'''
     cache_path = folder / _CACHE_FILE
     if not cache_path.exists():
         return False
     try:
         with np.load(cache_path, allow_pickle=True) as c:
             if int(c.get('version', 0)) != _CACHE_VERSION:
+                return False
+            # cache built with a different mirror-filter setting is not reusable
+            if bool(c.get('apply_mirror_filter', True)) != bool(apply_mirror_filter):
                 return False
         cache_mtime = cache_path.stat().st_mtime
         for xlsx in ('ear_summary.xlsx', 'eye_summary.xlsx', 'nose_summary.xlsx'):
@@ -456,7 +476,7 @@ def _load_from_cache(folder):
         }
 
 
-def _save_to_cache(folder, result):
+def _save_to_cache(folder, result, apply_mirror_filter=True):
     '''Save filtered arrays to .npz cache for fast future loads.
     Does NOT save if any intensity channel is entirely NaN — that indicates
     a transient read failure and should be retried next time.'''
@@ -469,6 +489,7 @@ def _save_to_cache(folder, result):
         np.savez_compressed(
             folder / _CACHE_FILE,
             version=np.array(_CACHE_VERSION),
+            apply_mirror_filter=np.array(bool(apply_mirror_filter)),
             time=result['time'],
             ear_intensity=ear,
             eye_intensity=eye,
@@ -609,9 +630,12 @@ def _apply_mirror_filter(arr, vel_arr, mag_arr, x_arr, y_arr, event_mask, channe
     return filtered, mode, bad
 
 
-def _load_intensity_from_summary(animal_folder):
+def _load_intensity_from_summary(animal_folder, apply_mirror_filter=True):
     '''
     Read per-frame intensity from ear/eye/nose_summary.xlsx files.
+
+    apply_mirror_filter: when False, the mirror-reflection filter is skipped
+    entirely — no frames are removed and the *_mirror_removed masks are all-False.
 
     On first call the xlsx files are parsed, filtered, and the result is
     cached as _labgrymace_cache.npz in the animal folder.  Subsequent calls
@@ -630,7 +654,7 @@ def _load_intensity_from_summary(animal_folder):
     folder = Path(animal_folder)
 
     # ── Fast path: return cached result ──────────────────────────────────────
-    if _cache_is_valid(folder):
+    if _cache_is_valid(folder, apply_mirror_filter):
         return _load_from_cache(folder)
 
     # ── Slow path: parse xlsx files ──────────────────────────────────────────
@@ -696,8 +720,9 @@ def _load_intensity_from_summary(animal_folder):
     # Per-tracker mirror-removal masks (default all-False; each reassigned if its filter runs)
     bad_nose = bad_ear0 = bad_ear1 = bad_eye0 = bad_eye1 = np.zeros(n, dtype=bool)
 
-    vel_nose_mode = 'skipped (no Velocity column)'
-    if nose_df is not None and 'Velocity' in nose_df.columns:
+    vel_nose_mode = ('mirror filter OFF (opt-in)' if not apply_mirror_filter
+                     else 'skipped (no Velocity column)')
+    if apply_mirror_filter and nose_df is not None and 'Velocity' in nose_df.columns:
         _bul_mask = ((nose_df['NoseEvent'] == 'Bul').values
                      if 'NoseEvent' in nose_df.columns
                      else np.zeros(n, dtype=bool))
@@ -711,9 +736,11 @@ def _load_intensity_from_summary(animal_folder):
             'nose')
 
     # ── 4-condition mirror-reflection filter — Ear tracker 0 & 1 ─────────────
-    vel_ear0_mode = 'skipped (no Velocity 0 column)'
-    vel_ear1_mode = 'skipped (no Velocity 1 column)'
-    if ear_df is not None and 'Velocity 0' in ear_df.columns:
+    vel_ear0_mode = ('mirror filter OFF (opt-in)' if not apply_mirror_filter
+                     else 'skipped (no Velocity 0 column)')
+    vel_ear1_mode = ('mirror filter OFF (opt-in)' if not apply_mirror_filter
+                     else 'skipped (no Velocity 1 column)')
+    if apply_mirror_filter and ear_df is not None and 'Velocity 0' in ear_df.columns:
         _ear0_bl = ((ear_df['Ear0Event'] == 'BL').values
                     if 'Ear0Event' in ear_df.columns
                     else np.zeros(n, dtype=bool))
@@ -725,7 +752,7 @@ def _load_intensity_from_summary(animal_folder):
             _col(ear_df, 'Ear0Y'),
             _ear0_bl,
             'ear0')
-    if ear_df is not None and 'Velocity 1' in ear_df.columns:
+    if apply_mirror_filter and ear_df is not None and 'Velocity 1' in ear_df.columns:
         _ear1_bl = ((ear_df['Ear1Event'] == 'BL').values
                     if 'Ear1Event' in ear_df.columns
                     else np.zeros(n, dtype=bool))
@@ -742,9 +769,11 @@ def _load_intensity_from_summary(animal_folder):
         ear_arr_all = np.nanmean(np.stack([ear_int_0, ear_int_1], axis=1), axis=1)
 
     # ── 4-condition mirror-reflection filter — Eye tracker 0 & 1 ─────────────
-    vel_eye0_mode = 'skipped (no Velocity 0 column)'
-    vel_eye1_mode = 'skipped (no Velocity 1 column)'
-    if eye_df is not None and 'Velocity 0' in eye_df.columns:
+    vel_eye0_mode = ('mirror filter OFF (opt-in)' if not apply_mirror_filter
+                     else 'skipped (no Velocity 0 column)')
+    vel_eye1_mode = ('mirror filter OFF (opt-in)' if not apply_mirror_filter
+                     else 'skipped (no Velocity 1 column)')
+    if apply_mirror_filter and eye_df is not None and 'Velocity 0' in eye_df.columns:
         _eye0_ot = ((eye_df['Eye0Event'] == 'OT').values
                     if 'Eye0Event' in eye_df.columns
                     else np.zeros(n, dtype=bool))
@@ -756,7 +785,7 @@ def _load_intensity_from_summary(animal_folder):
             _col(eye_df, 'Eye0Y'),
             _eye0_ot,
             'eye0')
-    if eye_df is not None and 'Velocity 1' in eye_df.columns:
+    if apply_mirror_filter and eye_df is not None and 'Velocity 1' in eye_df.columns:
         _eye1_ot = ((eye_df['Eye1Event'] == 'OT').values
                     if 'Eye1Event' in eye_df.columns
                     else np.zeros(n, dtype=bool))
@@ -846,22 +875,30 @@ def _load_intensity_from_summary(animal_folder):
         'n_frames':            n,
         'filter_source':       filter_source,
     }
-    _save_to_cache(folder, result)
+    _save_to_cache(folder, result, apply_mirror_filter)
     return result
 
 
-def load_raw_data(folder_path):
+def load_raw_data(folder_path, apply_mirror_filter=None):
     '''
     Load EarBL / EyeOT / NoseBul intensity from pre-generated summary files.
 
     Expects ear_summary.xlsx, eye_summary.xlsx, nose_summary.xlsx to already
     exist in folder_path (use "Generate Summary Files" first if they don't).
 
+    apply_mirror_filter: opt-in mirror-reflection filter.  When None (default),
+    falls back to the module-level APPLY_MIRROR_FILTER (default OFF).  Set True
+    only when the LabGym tracker may have picked up mirror reflections.  The
+    Figure 4E / Figure 6 repro scripts pass apply_mirror_filter=True explicitly
+    so they keep reproducing the published values.
+
     Returns dict with keys: time, ear_intensity, eye_intensity, nose_intensity,
     n_frames.  Returns None on failure.
     '''
+    if apply_mirror_filter is None:
+        apply_mirror_filter = APPLY_MIRROR_FILTER
     try:
-        return _load_intensity_from_summary(folder_path)
+        return _load_intensity_from_summary(folder_path, apply_mirror_filter)
     except Exception as e:
         import traceback
         print(f'Error loading {folder_path}: {e}\n{traceback.format_exc()}')
@@ -1423,6 +1460,260 @@ def write_pain_score_outputs(records, output_path, window_range=None):
 
 
 # ============================================================================
+# Reviewer traceability: merged-value columns and correlation-input tables
+# ============================================================================
+
+# Per summary file: (load_raw_data key, header of the yellow "merged" column).
+_MERGED_COL = {
+    'ear_summary.xlsx':  ('ear_intensity',  'Ear_merged_intensity(feeds pain score)'),
+    'eye_summary.xlsx':  ('eye_intensity',  'Eye_merged_intensity(feeds pain score)'),
+    'nose_summary.xlsx': ('nose_intensity', 'Nose_merged_intensity(feeds pain score)'),
+}
+_MERGED_RULE = (
+    'LabGrYMace merge rule (per frame, intensity_area channel, mirror filter applied):\n'
+    ' - both trackers present -> mean of the two\n'
+    ' - only one present        -> that single value (the other was mirror-deleted or missing)\n'
+    ' - both missing/deleted     -> blank (NA)\n'
+    'This is the per-frame value fed into the pain score (Figure 4E / Figure 6). It spans ALL '
+    'frames (not filtered by behavior). YELLOW marks it as the key downstream value.')
+
+
+def add_pain_score_merged_column(folder, apply_mirror_filter=True):
+    '''Write the YELLOW "<organ>_merged_intensity(feeds pain score)" column into the
+    ear/eye/nose summary files in `folder`, so reviewers can read the exact per-frame
+    value that feeds the pain score.
+
+    The value is the per-frame merged intensity_area (mirror rule: both->mean, one->that
+    one, none->blank), i.e. load_raw_data(...)['ear_intensity'] etc. It is NOT behavior
+    filtered (spans every frame). apply_mirror_filter defaults to True to match the
+    published Figure 4E / Figure 6 convention; pass False for the unfiltered merge.
+
+    Idempotent: reuses the column by header name. Adds no other data. Returns
+    {filename: n_values_written} or None if the folder can't be loaded.'''
+    import openpyxl
+    from openpyxl.styles import PatternFill, Font
+    from openpyxl.comments import Comment
+    YELLOW = PatternFill('solid', fgColor='FFFF00')
+    BOLD = Font(bold=True)
+    folder = Path(folder)
+    data = load_raw_data(str(folder), apply_mirror_filter=apply_mirror_filter)
+    if data is None:
+        return None
+    out = {}
+    for fname, (key, header) in _MERGED_COL.items():
+        p = folder / fname
+        if not p.exists():
+            continue
+        merged = np.asarray(data[key], dtype=float)
+        wb = openpyxl.load_workbook(str(p))
+        ws = wb['Summary'] if 'Summary' in wb.sheetnames else wb[wb.sheetnames[0]]
+        col = None
+        for c in range(1, ws.max_column + 1):
+            if ws.cell(row=1, column=c).value == header:
+                col = c
+                break
+        if col is None:
+            col = ws.max_column + 1
+        hc = ws.cell(row=1, column=col, value=header)
+        hc.font = BOLD
+        hc.fill = YELLOW
+        hc.comment = Comment(_MERGED_RULE, 'LabGrYMace')
+        n_val = 0
+        last = min(len(merged), ws.max_row - 1)
+        for i in range(last):
+            cell = ws.cell(row=i + 2, column=col)
+            v = merged[i]
+            if np.isfinite(v):
+                cell.value = float(v)
+                cell.number_format = '0.000'
+                n_val += 1
+            else:
+                cell.value = None
+            cell.fill = YELLOW
+        wb.save(str(p))
+        out[fname] = n_val
+    return out
+
+
+# Nine facial parameters used in the Figure-3 correlation (raw, behavior-gated).
+_CORR_PARAMS = ['acceleration', 'intensity_area', 'intensity_length', 'magnitude_area',
+                'magnitude_length', 'speed', 'velocity', 'vigor_area', 'vigor_length']
+
+
+def _corr_col(p):
+    '''Parameter key -> summary column base name ('intensity_area' -> 'Intensity Area').'''
+    return p.replace('_', ' ').title()
+
+
+def _correlation_heatmap(corr, out_png, title=None):
+    '''Figure-3 style Pearson-correlation heatmap (RdBu_r, white gridlines, 2-dp cell
+    values, "Pearson Correlation" colorbar). corr = a square DataFrame. Writes out_png.'''
+    import matplotlib.colors as mcolors
+    plt.rcParams.update({'axes.linewidth': 0.8, 'pdf.fonttype': 42, 'ps.fonttype': 42})
+    vals = corr.values
+    labels = [str(c).replace('_', ' ').title() for c in corr.columns]
+    n = len(labels)
+    fig, ax = plt.subplots(figsize=(4.9, 4.4), dpi=300)
+    fig.subplots_adjust(left=0.26, bottom=0.26, right=0.86, top=0.90 if title else 0.97)
+    cmap = plt.get_cmap('RdBu_r')
+    im = ax.imshow(vals, cmap=cmap, vmin=-1, vmax=1, interpolation='nearest', aspect='equal')
+    for k in range(1, n):
+        ax.axhline(k - 0.5, color='white', lw=0.5)
+        ax.axvline(k - 0.5, color='white', lw=0.5)
+    cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04, shrink=0.85)
+    cbar.set_label('Pearson Correlation', fontsize=7, labelpad=4)
+    cbar.ax.tick_params(labelsize=6, length=2, width=0.5)
+    cbar.outline.set_linewidth(0.5)
+    cbar.set_ticks([-1.0, -0.5, 0.0, 0.5, 1.0])
+    norm = mcolors.Normalize(vmin=-1, vmax=1)
+    for i in range(n):
+        for j in range(n):
+            v = vals[i, j]
+            rgba = cmap(norm(v))
+            lum = 0.2126 * rgba[0] + 0.7152 * rgba[1] + 0.0722 * rgba[2]
+            ax.text(j, i, f'{v:.2f}', ha='center', va='center', fontsize=6.5,
+                    fontweight='bold', color='white' if lum < 0.52 else 'black')
+    ax.set_xticks(np.arange(n))
+    ax.set_yticks(np.arange(n))
+    ax.set_xticklabels(labels, rotation=45, ha='right', va='top', rotation_mode='anchor', fontsize=9)
+    ax.set_yticklabels(labels, rotation=0, ha='right', va='center', fontsize=9)
+    ax.tick_params(axis='both', which='both', length=0, pad=3)
+    for sp in ax.spines.values():
+        sp.set_linewidth(0.8)
+    if title:
+        ax.set_title(title, fontsize=9, pad=6)
+    fig.savefig(out_png, dpi=300, bbox_inches='tight', pad_inches=0.05, facecolor='white')
+    plt.close(fig)
+
+
+def export_merged_correlation_table(sessions, organ, behavior, bilateral, out_xlsx):
+    '''Export the Figure-3 correlation INPUT as a reviewer-readable merged table.
+
+    For each session's <organ>_summary.xlsx, keep the frames where the pain behavior
+    occurs (`behavior`: ear='PB', eye='OT', nose='Bul'), RAW-merge the two sides per
+    parameter (both->mean, one->that side; nose is single-sided) WITHOUT the mirror
+    filter, and pool all sessions. This is exactly what the Figure-3 heatmap is built
+    from — so a reviewer can read every number and recompute the matrix.
+
+    sessions      : list of (name, folder) pairs.
+    organ         : 'ear' | 'eye' | 'nose'.
+    behavior      : the pain-behavior event label to keep.
+    bilateral     : True for ear/eye (two sides), False for nose.
+    out_xlsx      : output .xlsx path.
+
+    Sheets written:
+      - 'Merged_per_frame'   : Recording, Time, EventSide + 9 merged params (the pooled rows).
+      - 'Per_recording_mean' : per session n_frames + mean of each merged param.
+      - 'Correlation_9x9'    : Pearson matrix recomputed from Merged_per_frame (== heatmap).
+    Also writes '<out_xlsx stem>_heatmap.png' (Figure-3 style) next to the workbook.
+    Returns the pooled DataFrame (or None if nothing matched).'''
+    fname = organ + '_summary.xlsx'
+    evt = {'ear': 'Ear{s}Event', 'eye': 'Eye{s}Event', 'nose': 'NoseEvent'}[organ]
+    frames = []
+    for name, folder in sessions:
+        fp = os.path.join(folder, fname)
+        if not os.path.isfile(fp):
+            continue
+        df = pd.read_excel(fp)
+        if bilateral:
+            ev0, ev1 = evt.format(s=0), evt.format(s=1)
+            if ev0 not in df.columns:
+                continue
+            m0 = (df[ev0] == behavior)
+            m1 = (df[ev1] == behavior)
+            sub = df[m0 | m1]
+            if not len(sub):
+                continue
+            side = np.where(m0[m0 | m1] & m1[m0 | m1], 'both',
+                            np.where(m0[m0 | m1], 'side0', 'side1'))
+            out = {'Recording': name,
+                   'Time': sub['Time'].values if 'Time' in sub.columns else np.arange(len(sub)),
+                   'EventSide': side}
+            for p in _CORR_PARAMS:
+                d0 = pd.to_numeric(sub[_corr_col(p) + ' 0'], errors='coerce')
+                d1 = pd.to_numeric(sub[_corr_col(p) + ' 1'], errors='coerce')
+                s = d0.copy()
+                both = d0.notna() & d1.notna()
+                s[both] = (d0[both] + d1[both]) / 2
+                only1 = d0.isna() & d1.notna()
+                s[only1] = d1[only1]
+                out[p] = s.values
+            frames.append(pd.DataFrame(out))
+        else:
+            if 'NoseEvent' not in df.columns:
+                continue
+            sub = df[df['NoseEvent'] == behavior]
+            if not len(sub):
+                continue
+            out = {'Recording': name,
+                   'Time': sub['Time'].values if 'Time' in sub.columns else np.arange(len(sub)),
+                   'EventSide': 'single'}
+            for p in _CORR_PARAMS:
+                out[p] = pd.to_numeric(sub[_corr_col(p)], errors='coerce').values
+            frames.append(pd.DataFrame(out))
+    if not frames:
+        return None
+    pooled = pd.concat(frames, ignore_index=True)
+    corr = pooled[_CORR_PARAMS].corr(method='pearson')
+    per_rec = (pooled.groupby('Recording')[_CORR_PARAMS].agg(['count', 'mean'])
+               if len(pooled) else None)
+
+    beh_name = {'PB': 'pulling behind (ear)', 'OT': 'orbital tightening (eye)',
+                'Bul': 'bulging (nose)'}.get(behavior, behavior)
+    about = pd.DataFrame({'Field': [
+        'What this file is',
+        'PAIN-related?',
+        'Rows kept',
+        'Merge rule',
+        'Mirror filter',
+        'Prerequisite',
+        'Organ', 'Pain behavior', 'Recordings pooled', 'Frames pooled',
+        'Correlation sheet'],
+        'Value': [
+        'Pearson correlation of the 9 facial parameters, as used in Figure 3.',
+        'YES. Every row is a frame DURING the pain behavior, so this correlation '
+        'describes how the facial parameters co-vary while the animal is in pain.',
+        f"Only frames where the pain behavior '{behavior}' ({beh_name}) occurs "
+        f"({'either side' if bilateral else 'nose'}).",
+        'Two sides both present -> mean; only one present -> that side; '
+        + ('nose is single-sided.' if not bilateral else 'none -> excluded.'),
+        'NOT applied here (raw merge) — this is the correlation input, which differs '
+        'from the pain-score input (mirror-filtered, all frames, intensity_area only).',
+        'Built from the Step-1 summary files (ear/eye/nose_summary.xlsx). '
+        'You must generate those first (Step 1) before this analysis.',
+        organ, f'{behavior} ({beh_name})',
+        int(pooled['Recording'].nunique()), int(len(pooled)),
+        "'Correlation_9x9' = Pearson matrix recomputed from 'Merged_per_frame'."]})
+
+    stem = os.path.splitext(out_xlsx)[0]
+    os.makedirs(os.path.dirname(out_xlsx) or '.', exist_ok=True)
+    # Write to a temp file in the same folder (valid .xlsx extension so pandas accepts
+    # it), then atomically replace — so if the target is currently open in a viewer
+    # (locked), we never truncate it on failure.
+    tmp_xlsx = stem + '.writing.xlsx'
+    with pd.ExcelWriter(tmp_xlsx, engine='openpyxl') as w:
+        about.to_excel(w, sheet_name='About', index=False)
+        corr.round(4).to_excel(w, sheet_name='Correlation_9x9')
+        if per_rec is not None:
+            flat = per_rec.copy()
+            flat.columns = [f'{p}_{stat}' for p, stat in flat.columns]
+            flat.reset_index().round(4).to_excel(w, sheet_name='Per_recording_mean', index=False)
+        pooled.round(4).to_excel(w, sheet_name='Merged_per_frame', index=False)
+    os.replace(tmp_xlsx, out_xlsx)
+
+    # Figure-3 style heatmap PNG next to the workbook (temp + replace, same reason).
+    try:
+        png = stem + '_heatmap.png'
+        tmp_png = stem + '_heatmap.writing.png'
+        _correlation_heatmap(corr, tmp_png,
+                             title=f'{organ.title()} facial parameters during {beh_name}')
+        os.replace(tmp_png, png)
+    except Exception:
+        pass
+    return pooled
+
+
+# ============================================================================
 # Video overlay writer
 # ============================================================================
 
@@ -1723,6 +2014,14 @@ class _PainScoreDropTarget(wx.FileDropTarget):
         return True
 
 
+# Organ -> (pain behavior label, bilateral, output basename) for the correlation step.
+_CORR_ORGAN_CFG = {
+    'ear':  ('PB',  True,  'ear_pulling_behind'),
+    'eye':  ('OT',  True,  'eye_orbital_tightening'),
+    'nose': ('Bul', False, 'nose_bulging'),
+}
+
+
 class WindowLv2_GenerateSummary(wx.Frame):
     '''
     Lets the user pick a folder of LabGym _processed output, then runs
@@ -1731,9 +2030,10 @@ class WindowLv2_GenerateSummary(wx.Frame):
     '''
 
     def __init__(self, title):
-        super(WindowLv2_GenerateSummary, self).__init__(parent=None, title=title, size=(900, 560))
+        super(WindowLv2_GenerateSummary, self).__init__(parent=None, title=title, size=(900, 680))
         self._detected   = []   # [(name, raw_folder_path), ...]
         self._output_dir = None
+        self._corr_output_dir = None   # where correlation tables/heatmaps go (optional)
         self.display_window()
 
     def display_window(self):
@@ -1783,6 +2083,48 @@ class WindowLv2_GenerateSummary(wx.Frame):
         row2.Add(btn_out,         0, wx.LEFT | wx.RIGHT, 10)
         row2.Add(self.lbl_output, 1, wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 5)
         vbox.Add(row2, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
+        vbox.Add(0, 10, 0)
+
+        # ── Row 2b: optional correlation (pain behavior) from the summaries ──
+        vbox.Add(wx.StaticLine(panel), 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
+        vbox.Add(0, 6, 0)
+        self.chk_corr = wx.CheckBox(
+            panel, label='Also generate facial-parameter CORRELATION + heatmap (pain behavior)')
+        self.chk_corr.SetValue(False)   # opt-in
+        wx.CheckBox.SetToolTip(
+            self.chk_corr,
+            'After the summary files are generated, also compute the Pearson correlation\n'
+            'between the 9 facial parameters DURING the pain behavior (ear = pulling-behind,\n'
+            'eye = orbital-tightening, nose = bulging), pooled across the animals listed above.\n'
+            'This is a PAIN-related analysis (Figure 3) and needs the summary files — which is\n'
+            'exactly why it runs here, right after they are generated.')
+        vbox.Add(self.chk_corr, 0, wx.LEFT | wx.RIGHT, 20)
+        corr_note = wx.StaticText(panel, label=(
+            'Correlation is computed over PAIN-behavior frames only, pooled across the animals '
+            'above (Figure 3).\nIt reuses the summary files generated in this same step.'))
+        corr_note.SetForegroundColour(wx.Colour(90, 90, 90))
+        vbox.Add(corr_note, 0, wx.LEFT | wx.RIGHT | wx.TOP, 20)
+        vbox.Add(0, 6, 0)
+
+        # ── Row 2c: correlation output folder ──
+        row_corr = wx.BoxSizer(wx.HORIZONTAL)
+        btn_corr_out = wx.Button(panel, label='Select correlation\noutput folder', size=(220, 44))
+        btn_corr_out.Bind(wx.EVT_BUTTON, self.pick_corr_output)
+        wx.Button.SetToolTip(
+            btn_corr_out,
+            'Where the correlation tables and heatmaps are saved (one set per organ):\n'
+            '  <organ>_pain_correlation.xlsx  (About + Correlation_9x9 + Per_recording_mean\n'
+            '                                   + Merged_per_frame)\n'
+            '  <organ>_pain_correlation_heatmap.png\n'
+            'If left as "None", they are saved in a "correlation" subfolder of the summary output.')
+        self.lbl_corr_output = wx.StaticText(
+            panel, label='None  (defaults to <summary output>/correlation).',
+            style=wx.ALIGN_LEFT | wx.ST_ELLIPSIZE_END)
+        row_corr.Add(btn_corr_out,         0, wx.LEFT | wx.RIGHT, 10)
+        row_corr.Add(self.lbl_corr_output, 1, wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 5)
+        vbox.Add(row_corr, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
+        vbox.Add(0, 6, 0)
+        vbox.Add(wx.StaticLine(panel), 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
         vbox.Add(0, 8, 0)
 
         # ── Row 3: Generate button ──
@@ -1854,6 +2196,14 @@ class WindowLv2_GenerateSummary(wx.Frame):
             self.lbl_output.SetLabel(self._output_dir)
         dlg.Destroy()
 
+    def pick_corr_output(self, event):
+        dlg = wx.DirDialog(self, 'Select folder to save the correlation tables/heatmaps',
+                           style=wx.DD_DEFAULT_STYLE | wx.DD_NEW_DIR_BUTTON)
+        if dlg.ShowModal() == wx.ID_OK:
+            self._corr_output_dir = dlg.GetPath()
+            self.lbl_corr_output.SetLabel(self._corr_output_dir)
+        dlg.Destroy()
+
     def run_generate(self, event):
         if not self._detected:
             wx.MessageBox('Please select a raw data folder first.', 'Nothing to do',
@@ -1862,6 +2212,7 @@ class WindowLv2_GenerateSummary(wx.Frame):
 
         self.log.Clear()
         ok, skip, fail = 0, 0, 0
+        available = []   # (name, out_dir) folders that now have summary files
 
         for name, folder_path in self._detected:
             # Determine output directory for this animal
@@ -1876,6 +2227,7 @@ class WindowLv2_GenerateSummary(wx.Frame):
             if _has_summary_files(out):
                 self._log(f'[SKIP]  {name}  — summary files already exist in {out_dir}')
                 skip += 1
+                available.append((name, out_dir))
                 continue
 
             self._log(f'[GEN]   {name}  …')
@@ -1884,6 +2236,7 @@ class WindowLv2_GenerateSummary(wx.Frame):
                 if _has_summary_files(out):
                     self._log(f'        → saved to {out_dir}')
                     ok += 1
+                    available.append((name, out_dir))
                 else:
                     self._log(f'        → WARNING: generation ran but output files not found')
                     fail += 1
@@ -1896,15 +2249,67 @@ class WindowLv2_GenerateSummary(wx.Frame):
         self._log('')
         self._log(f'Done — {ok} generated, {skip} skipped, {fail} failed.')
 
+        # Optional: facial-parameter correlation (pain behavior) from the summaries
+        corr_msg = ''
+        if self.chk_corr.GetValue():
+            corr_msg = self._run_correlation(available)
+
         if fail == 0:
             dest = self._output_dir or '(each animal folder)'
             wx.MessageBox(
                 f'Summary files generated successfully.\n\n'
                 f'{ok} animal(s) processed, {skip} already existed.\n\n'
-                f'Output location: {dest}\n\n'
+                f'Output location: {dest}\n{corr_msg}\n'
                 f'Now open Step 2 (Pain Score) and select that output folder.',
                 'Done', wx.OK | wx.ICON_INFORMATION,
             )
+
+    def _run_correlation(self, available):
+        '''Compute the pain-behavior correlation tables + heatmaps from the just-generated
+        summaries in `available` = [(name, folder), ...]. Returns a one-line status string
+        for the final dialog. Logs progress to the window.'''
+        if not available:
+            self._log('[CORR]  skipped — no folders with summary files were available.')
+            return '\nCorrelation: skipped (no summary files available).'
+        # Resolve output folder: explicit choice, else <summary output>/correlation.
+        if self._corr_output_dir:
+            corr_dir = self._corr_output_dir
+        elif self._output_dir:
+            corr_dir = str(Path(self._output_dir) / 'correlation')
+        else:
+            self._log('[CORR]  skipped — please select a "correlation output folder" '
+                      '(summaries were saved alongside the raw data, so there is no default).')
+            return '\nCorrelation: skipped (no output folder selected).'
+        try:
+            os.makedirs(corr_dir, exist_ok=True)
+        except Exception as exc:
+            self._log(f'[CORR]  ERROR creating {corr_dir}: {exc}')
+            return '\nCorrelation: skipped (could not create output folder).'
+
+        self._log('')
+        self._log(f'[CORR]  Correlation over PAIN-behavior frames, pooled across '
+                  f'{len(available)} recording(s) → {corr_dir}')
+        done = 0
+        for organ, (behavior, bilateral, base) in _CORR_ORGAN_CFG.items():
+            out_xlsx = str(Path(corr_dir) / f'{base}_pain_correlation.xlsx')
+            self._log(f'        [{organ}] behavior={behavior} … reading summaries (can take a while)')
+            wx.GetApp().Yield()
+            try:
+                pooled = export_merged_correlation_table(
+                    available, organ, behavior, bilateral, out_xlsx)
+                if pooled is None or not len(pooled):
+                    self._log(f'           → no "{behavior}" frames found — skipped.')
+                else:
+                    self._log(f'           → {len(pooled)} pooled pain frames from '
+                              f'{pooled["Recording"].nunique()} recording(s) '
+                              f'→ {os.path.basename(out_xlsx)} (+ heatmap.png)')
+                    done += 1
+            except Exception as exc:
+                import traceback
+                self._log(f'           → ERROR: {exc}')
+                self._log(traceback.format_exc())
+        self._log(f'[CORR]  Correlation done — {done}/3 organ table(s) written to {corr_dir}')
+        return (f'\nCorrelation ({done}/3 organs, pain behavior) → {corr_dir}')
 
 
 # ============================================================================
@@ -2107,6 +2512,24 @@ class WindowLv2_PainScore(wx.Frame):
         boxsizer.Add(module_range, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
         boxsizer.Add(0, 10, 0)
 
+        # ── Row 3c: Mirror-reflection filter (opt-in) ─────────────────────
+        module_mirror = wx.BoxSizer(wx.HORIZONTAL)
+        self.chk_mirror = wx.CheckBox(
+            panel, label='Apply mirror-reflection filter (opt-in)', size=(300, -1))
+        self.chk_mirror.SetValue(APPLY_MIRROR_FILTER)   # default = OFF
+        wx.Window.SetToolTip(
+            self.chk_mirror,
+            'Leave OFF for normal recordings. Check this ONLY when the LabGym\n'
+            'tracker may have latched onto mirror reflections (spurious high-velocity\n'
+            'jumps toward the mirror). When ON, frames flagged by the 4-condition\n'
+            'mirror filter are removed before the pain score is computed and are\n'
+            'highlighted orange in the Merge-signals outputs.',
+        )
+        module_mirror.Add(self.chk_mirror, 0,
+                          wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 10)
+        boxsizer.Add(module_mirror, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
+        boxsizer.Add(0, 10, 0)
+
         # ── Row 4: Output folder ──────────────────────────────────────────
         module_out = wx.BoxSizer(wx.HORIZONTAL)
         button_out = wx.Button(panel, label='Select a folder to store\nthe results', size=(300, 40))
@@ -2197,7 +2620,8 @@ class WindowLv2_PainScore(wx.Frame):
                 final_name = f'{animal_name}_{suffix}'
                 suffix += 1
 
-            data = load_raw_data(folder_path)
+            data = load_raw_data(folder_path,
+                                 apply_mirror_filter=self.chk_mirror.GetValue())
             if data is not None:
                 print(f'[{animal_name}] filter: {data.get("filter_source", "unknown")}')
 
