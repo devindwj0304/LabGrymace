@@ -253,10 +253,25 @@ def generate_summary_files(folder_path, output_dir=None):
     _merge_ear_positions(folder,  out / 'ear_summary.xlsx')
     _merge_eye_positions(folder,  out / 'eye_summary.xlsx')
 
+    # Rename the view columns to a self-explanatory name and spell out their values,
+    # so the tables read clearly without a key ("Pos"/"f"/"s" are opaque to a reader).
+    # loaddata.py keeps its internal "Pos" naming; only the written output is renamed.
+    try:
+        _rename_pos_to_view(out)
+    except Exception:
+        pass
+
     # Add the YELLOW "merged intensity (feeds pain score)" column for reviewer
     # traceability. Mirror filter ON = the published Figure 4E / Figure 6 convention.
     try:
         add_pain_score_merged_column(out, apply_mirror_filter=True)
+    except Exception:
+        pass
+
+    # Reviewer subsheets (PanelB_behavior / PanelC_painscore) so the generated files
+    # carry the same traceability layout as the published summary tables.
+    try:
+        add_behavior_and_painscore_panels(out, apply_mirror_filter=True)
     except Exception:
         pass
 
@@ -265,6 +280,50 @@ def generate_summary_files(folder_path, output_dir=None):
         shutil.rmtree(str(_tmpdir))
     except Exception:
         pass
+
+
+_POS_TO_VIEW = {'Ear0Pos': 'Ear0View', 'Ear1Pos': 'Ear1View',
+                'Eye0Pos': 'Eye0View', 'Eye1Pos': 'Eye1View',
+                'NosePos': 'NoseView'}
+_VIEW_VALUES = {'f': 'frontal', 's': 'lateral'}
+
+
+def _rename_pos_to_view(out_dir):
+    '''Rename the "<region>Pos" columns of the generated summary files to
+    "<region>View" and spell out their values (f -> frontal, s -> lateral).
+
+    Only the written summary files are touched; loaddata.py keeps its internal
+    "Pos" naming (it maps LabGym's raw headers). Nothing downstream reads these
+    columns -- the analyses read the Event and parameter columns -- so this is a
+    presentation-only change. Idempotent.'''
+    import openpyxl
+    out_dir = Path(out_dir)
+    for fname in _SUMMARY_FILES:
+        p = out_dir / fname
+        if not p.exists():
+            continue
+        wb = openpyxl.load_workbook(str(p))
+        touched = False
+        for ws in wb.worksheets:
+            for c in range(1, ws.max_column + 1):
+                cell = ws.cell(row=1, column=c)
+                if cell.value in _POS_TO_VIEW:
+                    cell.value = _POS_TO_VIEW[cell.value]
+                    touched = True
+            if ws.title == 'Summary':
+                hdr = [ws.cell(row=1, column=c).value for c in range(1, ws.max_column + 1)]
+                for c, h in enumerate(hdr, 1):
+                    if h and str(h).endswith('View'):
+                        for r in range(2, ws.max_row + 1):
+                            cell = ws.cell(row=r, column=c)
+                            if cell.value in _VIEW_VALUES:
+                                cell.value = _VIEW_VALUES[cell.value]
+                                touched = True
+        if touched:
+            tmp = str(p) + '.writing.xlsx'
+            wb.save(tmp)
+            os.replace(tmp, str(p))
+        wb.close()
 
 
 def _merge_nose_positions(raw_folder, nose_summary_path):
@@ -432,7 +491,7 @@ def _summary_to_intensity_array(df, event_mask, intensity_cols):
 
 
 _CACHE_FILE = '_labgrymace_cache.npz'
-_CACHE_VERSION = 19  # bump when filter logic changes to force cache rebuild
+_CACHE_VERSION = 20  # bump when filter logic changes to force cache rebuild
                      # (19: added apply_mirror_filter flag to the cache)
 
 
@@ -468,6 +527,10 @@ def _load_from_cache(folder):
             'ear_intensity':       c['ear_intensity'],
             'eye_intensity':       c['eye_intensity'],
             'nose_intensity':      c['nose_intensity'],
+            'ear0_mirror_removed': c['ear0_mirror_removed'],
+            'ear1_mirror_removed': c['ear1_mirror_removed'],
+            'eye0_mirror_removed': c['eye0_mirror_removed'],
+            'eye1_mirror_removed': c['eye1_mirror_removed'],
             'ear_mirror_removed':  c['ear_mirror_removed'],
             'eye_mirror_removed':  c['eye_mirror_removed'],
             'nose_mirror_removed': c['nose_mirror_removed'],
@@ -494,6 +557,10 @@ def _save_to_cache(folder, result, apply_mirror_filter=True):
             ear_intensity=ear,
             eye_intensity=eye,
             nose_intensity=nose,
+            ear0_mirror_removed=result['ear0_mirror_removed'],
+            ear1_mirror_removed=result['ear1_mirror_removed'],
+            eye0_mirror_removed=result['eye0_mirror_removed'],
+            eye1_mirror_removed=result['eye1_mirror_removed'],
             ear_mirror_removed=result['ear_mirror_removed'],
             eye_mirror_removed=result['eye_mirror_removed'],
             nose_mirror_removed=result['nose_mirror_removed'],
@@ -869,6 +936,10 @@ def _load_intensity_from_summary(animal_folder, apply_mirror_filter=True):
         'ear_intensity':       ear_arr,
         'eye_intensity':       eye_arr,
         'nose_intensity':      nose_arr,
+        'ear0_mirror_removed': bad_ear0,
+        'ear1_mirror_removed': bad_ear1,
+        'eye0_mirror_removed': bad_eye0,
+        'eye1_mirror_removed': bad_eye1,
         'ear_mirror_removed':  ear_mirror_removed,
         'eye_mirror_removed':  eye_mirror_removed,
         'nose_mirror_removed': nose_mirror_removed,
@@ -1538,6 +1609,144 @@ def add_pain_score_merged_column(folder, apply_mirror_filter=True):
 # Nine facial parameters used in the Figure-3 correlation (raw, behavior-gated).
 _CORR_PARAMS = ['acceleration', 'intensity_area', 'intensity_length', 'magnitude_area',
                 'magnitude_length', 'speed', 'velocity', 'vigor_area', 'vigor_length']
+
+# organ -> (summary file, bilateral, event columns, painful event, resting event,
+#           load_raw_data intensity key, per-tracker mirror-mask keys, column prefix)
+_PANEL_ORGANS = {
+    'ear':  ('ear_summary.xlsx',  True,  ('Ear0Event', 'Ear1Event'), 'PB',  'BL',
+             'ear_intensity',  ('ear0_mirror_removed', 'ear1_mirror_removed'), 'Ear'),
+    'eye':  ('eye_summary.xlsx',  True,  ('Eye0Event', 'Eye1Event'), 'OT',  'BL',
+             'eye_intensity',  ('eye0_mirror_removed', 'eye1_mirror_removed'), 'Eye'),
+    'nose': ('nose_summary.xlsx', False, ('NoseEvent',),             'Bul', 'BL',
+             'nose_intensity', ('nose_mirror_removed',),             'Nose'),
+}
+_GREEN = '92D050'
+
+
+def add_behavior_and_painscore_panels(folder, apply_mirror_filter=True):
+    '''Write the two reviewer subsheets into each summary file in `folder`:
+
+      PanelB_behavior  - per frame: the two sides' behavior categories, a Group label
+                         (pain / not-pain / both / none; "both" = the two sides carry
+                         different categories, highlighted green) and the merged value of
+                         each of the nine parameters (both sides -> mean, one -> that
+                         side, none -> blank). This is the input to the correlation and
+                         dose-response analyses.
+      PanelC_painscore - per frame: each side's mirror-filtered intensity_area (removed
+                         frames orange), the merged value that feeds the pain score
+                         (yellow header) and per-side removal flags. All frames are used;
+                         no behavior gating is applied here.
+
+    Sheets are placed directly after "Summary" and rebuilt on each call (idempotent).'''
+    import openpyxl
+    from openpyxl.styles import PatternFill, Font
+    BOLD = Font(bold=True)
+    GREEN = PatternFill('solid', fgColor=_GREEN)
+    ORANGE = PatternFill('solid', fgColor='FFC000')
+    YELLOW = PatternFill('solid', fgColor='FFFF00')
+    folder = Path(folder)
+    data = load_raw_data(str(folder), apply_mirror_filter=apply_mirror_filter)
+    if data is None:
+        return None
+
+    def _num(x):
+        return None if (x is None or not np.isfinite(x)) else round(float(x), 4)
+
+    written = 0
+    for organ, (fname, bilat, evc, pain, rest, key, maskkeys, pfx) in _PANEL_ORGANS.items():
+        p = folder / fname
+        if not p.exists():
+            continue
+        df = pd.read_excel(p, sheet_name='Summary')
+        n = len(df)
+        time = df['Time'].values if 'Time' in df.columns else np.arange(n)
+
+        # merged value per parameter (same rule for every parameter)
+        merged = {}
+        for prm in _CORR_PARAMS:
+            if bilat:
+                d0 = pd.to_numeric(df[_corr_col(prm) + ' 0'], errors='coerce').values
+                d1 = pd.to_numeric(df[_corr_col(prm) + ' 1'], errors='coerce').values
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore', RuntimeWarning)
+                    merged[prm] = np.nanmean(np.stack([d0, d1], axis=1), axis=1)
+            else:
+                merged[prm] = pd.to_numeric(df[_corr_col(prm)], errors='coerce').values
+
+        # behavior grouping from the two sides
+        e0 = df[evc[0]].astype(object).values
+        e1 = df[evc[1]].astype(object).values if bilat else None
+        is_p = (e0 == pain) | (e1 == pain) if bilat else (e0 == pain)
+        is_r = (e0 == rest) | (e1 == rest) if bilat else (e0 == rest)
+        group = np.where(is_p & is_r, 'both',
+                         np.where(is_p, 'pain', np.where(is_r, 'not-pain', 'none')))
+
+        # per-side mirror-filtered intensity_area
+        sides = []
+        for i, mk in enumerate(maskkeys):
+            col = f'Intensity Area {i}' if bilat else 'Intensity Area'
+            raw = pd.to_numeric(df[col], errors='coerce').values.astype(float)
+            bad = np.asarray(data.get(mk, np.zeros(n, dtype=bool)), dtype=bool)
+            filt = raw.copy()
+            m = min(len(filt), len(bad))
+            filt[:m][bad[:m]] = np.nan
+            sides.append((filt, bad))
+        dmerged = np.asarray(data[key], dtype=float)
+
+        wb = openpyxl.load_workbook(str(p))
+        for sh in ('PanelB_behavior', 'PanelC_painscore'):
+            if sh in wb.sheetnames:
+                del wb[sh]
+
+        ws = wb.create_sheet('PanelB_behavior')
+        hdr = ([ 'Time', f'{pfx}0Event', f'{pfx}1Event', 'Group'] if bilat
+               else ['Time', f'{pfx}Event', 'Group']) + _CORR_PARAMS
+        ws.append(hdr)
+        for c in ws[1]:
+            c.font = BOLD
+        gcol = hdr.index('Group') + 1
+        for i in range(n):
+            row = ([time[i], e0[i], e1[i], group[i]] if bilat else [time[i], e0[i], group[i]])
+            row += [_num(merged[prm][i]) for prm in _CORR_PARAMS]
+            ws.append(row)
+        for i in range(n):
+            if group[i] == 'both':
+                ws.cell(row=i + 2, column=gcol).fill = GREEN
+
+        ws2 = wb.create_sheet('PanelC_painscore')
+        if bilat:
+            hdr2 = ['Time', f'IntensityArea_{pfx}0_filtered', f'IntensityArea_{pfx}1_filtered',
+                    'merged_intensity_area(pain score input)', f'{pfx}0_removed', f'{pfx}1_removed']
+        else:
+            hdr2 = ['Time', f'IntensityArea_{pfx}_filtered',
+                    'merged_intensity_area(pain score input)', f'{pfx}_removed']
+        ws2.append(hdr2)
+        for c in ws2[1]:
+            c.font = BOLD
+        mcol = hdr2.index('merged_intensity_area(pain score input)') + 1
+        ws2.cell(row=1, column=mcol).fill = YELLOW
+        for i in range(n):
+            row = [time[i]] + [_num(s[0][i]) for s in sides]
+            row += [_num(dmerged[i]) if i < len(dmerged) else None]
+            row += ['YES' if (i < len(s[1]) and s[1][i]) else '' for s in sides]
+            ws2.append(row)
+        for i in range(n):
+            for j, (_, bad) in enumerate(sides):
+                if i < len(bad) and bad[i]:
+                    ws2.cell(row=i + 2, column=2 + j).fill = ORANGE
+
+        order = [wb[s] for s in ('Summary', 'PanelB_behavior', 'PanelC_painscore')
+                 if s in wb.sheetnames]
+        for sheet in wb.worksheets:
+            if sheet not in order:
+                order.append(sheet)
+        wb._sheets = order
+        tmp = str(p) + '.writing.xlsx'
+        wb.save(tmp)
+        os.replace(tmp, str(p))
+        wb.close()
+        written += 1
+    return written
 
 
 def _corr_col(p):
