@@ -35,11 +35,11 @@ try:
 	if gpus:
 		for gpu in gpus:
 			tf.config.experimental.set_memory_growth(gpu, True)
-		print(f" LabGym: TensorFlow GPU memory growth enabled for {len(gpus)} GPU(s)")
+		print(f"[OK] LabGym: TensorFlow GPU memory growth enabled for {len(gpus)} GPU(s)")
 	else:
-		print("  LabGym: No GPU detected, using CPU")
+		print("[WARNING] LabGym: No GPU detected, using CPU")
 except Exception as e:
-	print(f"  LabGym: Could not configure TensorFlow GPU: {e}")
+	print(f"[WARNING] LabGym: Could not configure TensorFlow GPU: {e}")
 
 # Now import PyTorch (it will share GPU with TensorFlow)
 import torch
@@ -47,11 +47,11 @@ try:
 	if torch.cuda.is_available():
 		# PyTorch will automatically share GPU memory with TensorFlow
 		# thanks to TF_FORCE_GPU_ALLOW_GROWTH and PYTORCH_CUDA_ALLOC_CONF
-		print(f" LabGym: PyTorch GPU enabled (shared memory mode)")
+		print(f"[OK] LabGym: PyTorch GPU enabled (shared memory mode)")
 	else:
-		print("  LabGym: PyTorch using CPU")
+		print("[WARNING] LabGym: PyTorch using CPU")
 except Exception as e:
-	print(f"  LabGym: Could not configure PyTorch GPU: {e}")
+	print(f"[WARNING] LabGym: Could not configure PyTorch GPU: {e}")
 
 __version__='2.9.0'
 

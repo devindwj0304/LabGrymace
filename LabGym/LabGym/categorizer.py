@@ -111,9 +111,9 @@ import itertools
 import sys
 import tensorflow as tf
 
-print("  Python :", sys.executable)
-print("  TensorFlow :", tf.__version__)
-print("  TensorFlow :", tf.__file__)
+print("Current Python executable path:", sys.executable)
+print("Current TensorFlow version:", tf.__version__)
+print("Current TensorFlow load path:", tf.__file__)
 
 
 
@@ -1207,7 +1207,7 @@ class Categorizers():
 					plt.savefig(os.path.join(out_path,'training_history.png'))
 					print('Training reports saved in: '+str(out_path))
 					if len(self.log)>0:
- # Fix UnicodeEncodeError by specifying UTF-8 encoding
+						# Fix UnicodeEncodeError by specifying UTF-8 encoding
 						with open(os.path.join(out_path,'Training log.txt'),'w',encoding='utf-8') as training_log:
 							training_log.write('\n'.join(str(i) for i in self.log))
 				plt.close('all')
@@ -1393,7 +1393,7 @@ class Categorizers():
 				pd.DataFrame(report).transpose().to_csv(os.path.join(model_path,'training_metrics.csv'),float_format='%.2f')
 				if out_path is not None:
 					pd.DataFrame(report).transpose().to_excel(os.path.join(out_path,'training_metrics.xlsx'),float_format='%.2f')
- # also emit the diagnostic confusion matrix on the (augmented) validation split
+					# also emit the diagnostic confusion matrix on the (augmented) validation split
 					try:
 						if len(self.classnames)==2:
 							cm_true=np.array(testY).astype(int)
@@ -1420,7 +1420,7 @@ class Categorizers():
 					plt.savefig(os.path.join(out_path,'training_history.png'))
 					print('Training reports saved in: '+str(out_path))
 					if len(self.log)>0:
- # Fix UnicodeEncodeError by specifying UTF-8 encoding
+						# Fix UnicodeEncodeError by specifying UTF-8 encoding
 						with open(os.path.join(out_path,'Training log.txt'),'w',encoding='utf-8') as training_log:
 							training_log.write('\n'.join(str(i) for i in self.log))
 				plt.close('all')
@@ -1599,7 +1599,7 @@ class Categorizers():
 				pd.DataFrame(report).transpose().to_csv(os.path.join(model_path,'training_metrics.csv'),float_format='%.2f')
 				if out_path is not None:
 					pd.DataFrame(report).transpose().to_excel(os.path.join(out_path,'training_metrics.xlsx'),float_format='%.2f')
- # also emit the diagnostic confusion matrix on the (augmented) validation split
+					# also emit the diagnostic confusion matrix on the (augmented) validation split
 					try:
 						if len(self.classnames)==2:
 							cm_true=np.array(testY).astype(int)
@@ -1626,7 +1626,7 @@ class Categorizers():
 					plt.savefig(os.path.join(out_path,'training_history.png'))
 					print('Training reports saved in: '+str(out_path))
 					if len(self.log)>0:
- # Fix UnicodeEncodeError by specifying UTF-8 encoding
+						# Fix UnicodeEncodeError by specifying UTF-8 encoding
 						with open(os.path.join(out_path,'Training log.txt'),'w',encoding='utf-8') as training_log:
 							training_log.write('\n'.join(str(i) for i in self.log))
 				plt.close('all')
@@ -1766,7 +1766,7 @@ class Categorizers():
 				plt.savefig(os.path.join(out_path,'training_history.png'))
 				print('Training reports saved in: '+str(out_path))
 				if len(self.log)>0:
- # Fix UnicodeEncodeError by specifying UTF-8 encoding
+					# Fix UnicodeEncodeError by specifying UTF-8 encoding
 					with open(os.path.join(out_path,'Training log.txt'),'w',encoding='utf-8') as training_log:
 						training_log.write('\n'.join(str(i) for i in self.log))
 			plt.close('all')
@@ -1877,7 +1877,7 @@ class Categorizers():
 				plt.savefig(os.path.join(out_path,'training_history.png'))
 				print('Training reports saved in: '+str(out_path))
 				if len(self.log)>0:
- # Fix UnicodeEncodeError by specifying UTF-8 encoding
+					# Fix UnicodeEncodeError by specifying UTF-8 encoding
 					with open(os.path.join(out_path,'Training log.txt'),'w',encoding='utf-8') as training_log:
 						training_log.write('\n'.join(str(i) for i in self.log))
 			plt.close('all')
@@ -1979,7 +1979,7 @@ class Categorizers():
 				plt.savefig(os.path.join(out_path,'training_history.png'))
 				print('Training reports saved in: '+str(out_path))
 				if len(self.log)>0:
- # Fix UnicodeEncodeError by specifying UTF-8 encoding
+					# Fix UnicodeEncodeError by specifying UTF-8 encoding
 					with open(os.path.join(out_path,'Training log.txt'),'w',encoding='utf-8') as training_log:
 						training_log.write('\n'.join(str(i) for i in self.log))
 			plt.close('all')

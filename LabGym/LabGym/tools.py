@@ -492,11 +492,11 @@ def crop_frame(frame,contours):
 	the border of a list of contours.
 	'''
 
- # Add None check to prevent AttributeError when frame is None (avoids accessing .shape on None object)
+	# Add None check to prevent AttributeError when frame is None (avoids accessing .shape on None object)
 	if frame is None:
 		return (0, 0, 0, 0)
 
- # Add check for empty contours to prevent reduction operation error
+	# Add check for empty contours to prevent reduction operation error
 	valid_contours = [contours[i] for i in range(len(contours)) if contours[i] is not None]
 	if len(valid_contours) == 0:
 		return (0, frame.shape[0], 0, frame.shape[1])
@@ -671,7 +671,7 @@ def contour_frame(frame,animal_number,background,background_low,background_high,
 	if len(contours)>0:
 		for i in contours:
 			moments = cv2.moments(i)
- # Check for zero area to prevent division by zero error
+			# Check for zero area to prevent division by zero error
 			if moments['m00'] != 0:
 				centers.append((int(moments['m10']/moments['m00']),int(moments['m01']/moments['m00'])))
 				(_,_),(w,h),_=cv2.minAreaRect(i)
@@ -697,7 +697,7 @@ def generate_patternimage(frame,outlines,inners=None,std=0):
 	std: a integer between 0 and 255, higher std, less inners are included in the pattern images
 	'''
 
- # Add None check to prevent AttributeError when frame is None
+	# Add None check to prevent AttributeError when frame is None
 	if frame is None:
 		return np.zeros((100, 100, 3), dtype='uint8')
 
@@ -876,7 +876,7 @@ def generate_patternimage_all(frame,y_bt,y_tp,x_lf,x_rt,outlines_list,inners_lis
 	std: a integer between 0 and 255, higher std, less inners are included in the pattern images
 	'''
 
- # Add None check to prevent AttributeError when frame is None
+	# Add None check to prevent AttributeError when frame is None
 	if frame is None:
 		return np.zeros((100, 100, 3), dtype='uint8')
 
@@ -963,7 +963,7 @@ def generate_patternimage_interact(frame,outlines,other_outlines,inners=None,oth
 	std: a integer between 0 and 255, higher std, less inners are included in the pattern images
 	'''
 
- # Add None check to prevent AttributeError when frame is None
+	# Add None check to prevent AttributeError when frame is None
 	if frame is None:
 		return np.zeros((100, 100, 3), dtype='uint8')
 

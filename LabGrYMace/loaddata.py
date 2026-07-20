@@ -289,7 +289,7 @@ class FacialDataIntegrator:
 
             # Check if all integrated files already exist
             if self.check_integrated_files_exist(dataset_name):
-                print(f" All integrated files already exist for {dataset_name}, skipping...")
+                print(f"[OK] All integrated files already exist for {dataset_name}, skipping...")
                 results[dataset_name] = {
                     'eyes': os.path.join(self.output_base, dataset_name, "integrated_eyes_data.xlsx"),
                     'ears': os.path.join(self.output_base, dataset_name, "integrated_ears_data.xlsx"),
@@ -814,6 +814,7 @@ class LoadDataAdvanced:
             elif ch == 1:
                 ch1 = ch1 | present
             else:
+                # ambiguous column: treat as affecting both channels (so both can be annotated)
                 ch0 = ch0 | present
                 ch1 = ch1 | present
         # Map to Time index
@@ -1515,7 +1516,7 @@ class LoadDataAdvanced:
 
             # Check if all summary files already exist
             if self.check_summary_files_exist(key):
-                print(f" All summary files already exist for {key}, skipping...")
+                print(f"[OK] All summary files already exist for {key}, skipping...")
                 results[key] = {
                     'eye_summary': os.path.join(self.summary_root, key, "eye_summary.xlsx"),
                     'ear_summary': os.path.join(self.summary_root, key, "ear_summary.xlsx"),

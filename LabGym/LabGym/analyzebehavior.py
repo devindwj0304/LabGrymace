@@ -308,7 +308,7 @@ class AnalyzeAnimal():
 		unused_existing_indices=list(self.animal_existingcenters)
 		existing_centers=list(self.animal_existingcenters.values())
 		unused_new_indices=list(range(len(centers)))
- # Check for empty arrays before cdist to prevent ValueError
+		# Check for empty arrays before cdist to prevent ValueError
 		if len(existing_centers) > 0 and len(centers) > 0:
 			dt_flattened=distance.cdist(existing_centers,centers).flatten()
 			dt_sort_index=dt_flattened.argsort()
@@ -969,7 +969,7 @@ class AnalyzeAnimal():
 									distance_traveled+=dt
 									d+=1
 								if normalize_distance:
- # Prevent math.sqrt error on negative or zero values
+									# Prevent math.sqrt error on negative or zero values
 									area_val = self.animal_area if self.animal_area is not None and self.animal_area > 0 else 1
 									calibrator=math.sqrt(area_val)
 									distance_traveled=distance_traveled/calibrator
@@ -1081,7 +1081,7 @@ class AnalyzeAnimal():
 								distance_traveled+=dt
 								d+=1
 							if normalize_distance:
- # Prevent math.sqrt error on negative or zero values
+								# Prevent math.sqrt error on negative or zero values
 								area_val = self.animal_area if self.animal_area is not None and self.animal_area > 0 else 1
 								calibrator=math.sqrt(area_val)
 								distance_traveled=distance_traveled/calibrator
@@ -1264,7 +1264,7 @@ class AnalyzeAnimal():
 		self.log.append('All results exported in: '+str(self.results_path))
 		self.log.append('Analysis completed!')
 		if len(self.log)>0:
- # Fix UnicodeEncodeError by specifying UTF-8 encoding
+			# Fix UnicodeEncodeError by specifying UTF-8 encoding
 			with open(os.path.join(self.results_path,'Analysis log.txt'),'w',encoding='utf-8') as analysis_log:
 				analysis_log.write('\n'.join(str(i) for i in self.log))
 

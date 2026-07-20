@@ -270,7 +270,7 @@ class AnalyzeAnimalDetector():
 		unused_existing_indices=list(self.animal_existingcenters[animal_name])
 		existing_centers=list(self.animal_existingcenters[animal_name].values())
 		unused_new_indices=list(range(len(centers)))
- # Check for empty arrays before cdist to prevent ValueError
+		# Check for empty arrays before cdist to prevent ValueError
 		if len(existing_centers) > 0 and len(centers) > 0:
 			dt_flattened=distance.cdist(existing_centers,centers).flatten()
 			dt_sort_index=dt_flattened.argsort()
@@ -286,15 +286,15 @@ class AnalyzeAnimalDetector():
 					if self.register_counts[animal_name][index_in_existing] is None:
 						self.register_counts[animal_name][index_in_existing]=frame_count_analyze
 					self.to_deregister[animal_name][index_in_existing]=0
- # Add bounds check to prevent IndexError when frame_count_analyze exceeds pre-allocated array size
+					# Add bounds check to prevent IndexError when frame_count_analyze exceeds pre-allocated array size
 					if frame_count_analyze < len(self.animal_contours[animal_name][index_in_existing]):
 						self.animal_contours[animal_name][index_in_existing][frame_count_analyze]=contours[index_in_new]
 					center=centers[index_in_new]
- # Add bounds check to prevent IndexError when frame_count_analyze exceeds pre-allocated array size
+					# Add bounds check to prevent IndexError when frame_count_analyze exceeds pre-allocated array size
 					if frame_count_analyze < len(self.animal_centers[animal_name][index_in_existing]):
 						self.animal_centers[animal_name][index_in_existing][frame_count_analyze]=center
 					self.animal_existingcenters[animal_name][index_in_existing]=center
- # Add bounds check to prevent IndexError when frame_count_analyze exceeds pre-allocated array size
+					# Add bounds check to prevent IndexError when frame_count_analyze exceeds pre-allocated array size
 					if frame_count_analyze < len(self.animal_heights[animal_name][index_in_existing]):
 						self.animal_heights[animal_name][index_in_existing][frame_count_analyze]=heights[index_in_new]
 					if self.include_bodyparts:
@@ -303,7 +303,7 @@ class AnalyzeAnimalDetector():
 					else:
 						pattern_image=generate_patternimage(self.background,self.animal_contours[animal_name][index_in_existing][max(0,(frame_count_analyze-self.length+1)):frame_count_analyze+1],inners=None,std=0)
 					pattern_image=cv2.resize(pattern_image,(self.dim_conv,self.dim_conv),interpolation=cv2.INTER_AREA)
- # Add bounds check to prevent IndexError when frame_count_analyze exceeds pre-allocated array size
+					# Add bounds check to prevent IndexError when frame_count_analyze exceeds pre-allocated array size
 					if frame_count_analyze < len(self.pattern_images[animal_name][index_in_existing]):
 						self.pattern_images[animal_name][index_in_existing][frame_count_analyze]=np.array(pattern_image)
 
@@ -348,7 +348,7 @@ class AnalyzeAnimalDetector():
 				unused_existing_indices=list(self.animal_existingcenters[animal_name])
 				existing_centers=list(self.animal_existingcenters[animal_name].values())
 				unused_new_indices=list(range(len(animal_centers)))
- # Check for empty arrays before cdist to prevent ValueError
+				# Check for empty arrays before cdist to prevent ValueError
 				if len(existing_centers) > 0 and len(animal_centers) > 0:
 					dt_flattened=distance.cdist(existing_centers,animal_centers).flatten()
 					dt_sort_index=dt_flattened.argsort()
@@ -365,22 +365,22 @@ class AnalyzeAnimalDetector():
 									self.register_counts[animal_name][index_in_existing]=frame_count_analyze
 								self.to_deregister[animal_name][index_in_existing]=0
 								contour=animal_contours[index_in_new]
- # Add bounds check to prevent IndexError when frame_count_analyze exceeds pre-allocated array size
+								# Add bounds check to prevent IndexError when frame_count_analyze exceeds pre-allocated array size
 								if frame_count_analyze < len(self.animal_contours[animal_name][index_in_existing]):
 									self.animal_contours[animal_name][index_in_existing][frame_count_analyze]=contour
 								center=animal_centers[index_in_new]
- # Add bounds check to prevent IndexError when frame_count_analyze exceeds pre-allocated array size
+								# Add bounds check to prevent IndexError when frame_count_analyze exceeds pre-allocated array size
 								if frame_count_analyze < len(self.animal_centers[animal_name][index_in_existing]):
 									self.animal_centers[animal_name][index_in_existing][frame_count_analyze]=center
 								self.animal_existingcenters[animal_name][index_in_existing]=center
- # Add bounds check to prevent IndexError when frame_count_analyze exceeds pre-allocated array size
+							# Add bounds check to prevent IndexError when frame_count_analyze exceeds pre-allocated array size
 							if frame_count_analyze < len(self.animal_heights[animal_name][index_in_existing]):
 								self.animal_heights[animal_name][index_in_existing][frame_count_analyze]=animal_heights[index_in_new]
 							self.animal_other_contours[animal_name][index_in_existing].append(animal_other_contours[index_in_new])
 							if self.animation_analyzer:
 								blob=img_to_array(cv2.resize(animal_blobs[index_in_new],(self.dim_tconv,self.dim_tconv),interpolation=cv2.INTER_AREA))
 								self.animal_blobs[animal_name][index_in_existing].append(blob)
- # Add bounds check to prevent IndexError when frame_count_analyze exceeds pre-allocated array size
+								# Add bounds check to prevent IndexError when frame_count_analyze exceeds pre-allocated array size
 								if frame_count_analyze < len(self.animations[animal_name][index_in_existing]):
 									self.animations[animal_name][index_in_existing][frame_count_analyze]=np.array(self.animal_blobs[animal_name][index_in_existing])
 							if self.include_bodyparts:
@@ -390,11 +390,11 @@ class AnalyzeAnimalDetector():
 							else:
 								pattern_image=generate_patternimage_interact(self.background,self.animal_contours[animal_name][index_in_existing][max(0,(frame_count_analyze-self.length+1)):frame_count_analyze+1],self.animal_other_contours[animal_name][index_in_existing],inners=None,other_inners=None,std=0)
 							pattern_image=cv2.resize(pattern_image,(self.dim_conv,self.dim_conv),interpolation=cv2.INTER_AREA)
- # Add bounds check to prevent IndexError when frame_count_analyze exceeds pre-allocated array size
+							# Add bounds check to prevent IndexError when frame_count_analyze exceeds pre-allocated array size
 							if frame_count_analyze < len(self.pattern_images[animal_name][index_in_existing]):
 								self.pattern_images[animal_name][index_in_existing][frame_count_analyze]=np.array(pattern_image)
 				
- # Handle case when no existing centers (all animals are new)
+				# Handle case when no existing centers (all animals are new)
 				elif len(animal_centers) > 0:
 					# Register all new animals when no existing ones
 					for index_in_new in range(len(animal_centers)):
@@ -518,7 +518,7 @@ class AnalyzeAnimalDetector():
 								mask=goodmasks[x]
 								cnt=goodcontours[x]
 								moments = cv2.moments(cnt)
- # Skip contours with zero area to prevent division by zero
+								# Skip contours with zero area to prevent division by zero
 								if moments['m00'] != 0:
 									contours.append(cnt)
 									centers.append((int(moments['m10']/moments['m00']),int(moments['m01']/moments['m00'])))  
@@ -659,7 +659,7 @@ class AnalyzeAnimalDetector():
 								mask=goodmasks[x]
 								cnt=goodcontours[x]
 								moments = cv2.moments(cnt)
- # Skip zero area contours and maintain list consistency
+								# Skip zero area contours and maintain list consistency
 								if moments['m00'] != 0:
 									all_masks.append(mask)
 									all_contours.append(cnt)
@@ -676,7 +676,7 @@ class AnalyzeAnimalDetector():
 
 					centers_array=np.array(all_centers)
 					distances_squared=np.sum((centers_array[:,None]-centers_array)**2,axis=2)
- # Prevent division by zero when average_area is empty
+					# Prevent division by zero when average_area is empty
 					if len(average_area) > 0:
 						determine=np.logical_and(distances_squared>0,distances_squared<(math.sqrt(sum(average_area)/len(average_area))*self.social_distance)**2)
 					else:
@@ -687,7 +687,7 @@ class AnalyzeAnimalDetector():
 					else:
 						other_inners=None
 					if self.animation_analyzer:
- # Prevent np.stack error on empty arrays
+						# Prevent np.stack error on empty arrays
 						other_masks=[np.bitwise_or.reduce(np.stack(np.array(all_masks)[determine[x]])) if len(c)>0 and np.any(determine[x]) else None for x,c in enumerate(other_contours)]
 						for i,other_mask in enumerate(other_masks):
 							contour=all_contours[i]
@@ -1064,7 +1064,7 @@ class AnalyzeAnimalDetector():
 		if torch.cuda.is_available():
 			torch.cuda.empty_cache()
 			torch.cuda.synchronize()
-			print(f" Cleared PyTorch GPU cache before TensorFlow categorization")
+			print(f"[OK] Cleared PyTorch GPU cache before TensorFlow categorization")
 
 		# --- Reject Categorizers declaring an unsupported behavior mode ---
 		_params_path=os.path.join(path_to_categorizer,'model_parameters.txt')
@@ -1177,6 +1177,7 @@ class AnalyzeAnimalDetector():
 								self.all_behavior_parameters[animal_name][behavior_name]['probability'][n][
 									i] = probability
 
+							# Determine the most likely behavior so it can be checked against the individual-specific behavior list
 							if len(behavior_names) == 2:
 								if prediction[0] > 0.5:
 									predicted_behavior = behavior_names[1]
@@ -1185,15 +1186,19 @@ class AnalyzeAnimalDetector():
 							else:
 								predicted_behavior = behavior_names[np.argmax(prediction)]
 
+							# Strict filtering against individual-specific behaviors
 							behavior_allowed = True
 							if self.specific_behaviors and animal_name in self.specific_behaviors:
 								if predicted_behavior not in self.specific_behaviors[animal_name]:
+									# Disallow the behavior if it is listed as specific to a different animal
 									for other_animal, other_behaviors in self.specific_behaviors.items():
 										if other_animal != animal_name and predicted_behavior in other_behaviors:
 											behavior_allowed = False
 											break
 
+							# Record the event probability, depending on whether the behavior is allowed
 							if behavior_allowed:
+								# Standard uncertainty check
 								if len(behavior_names) == 2:
 									confidence_diff = abs(prediction[0] - (1 - prediction[0]))
 									if confidence_diff > uncertain:
@@ -1228,6 +1233,7 @@ class AnalyzeAnimalDetector():
 											self.event_probability[animal_name][n][i] = [
 												behavior_names[np.argmax(prediction)], prediction[np.argmax(prediction)]]
 							else:
+								# Behavior is not allowed for this individual: force the result to NA
 								self.event_probability[animal_name][n][i] = ['NA', -1]
 
 					idx += 1
@@ -1317,17 +1323,17 @@ class AnalyzeAnimalDetector():
 		self.log.append(str(datetime.datetime.now()))
 		
 		# Pre-flight video check to prevent overread errors
-		print(f" Verifying video file: {self.path_to_video}")
+		print(f"Verifying video file: {self.path_to_video}")
 		if not os.path.exists(self.path_to_video):
-			print(f" Error: Video file does not exist: {self.path_to_video}")
+			print(f"[ERROR] Video file does not exist: {self.path_to_video}")
 			return
 		
 		file_size = os.path.getsize(self.path_to_video)
 		if file_size == 0:
-			print(f" Error: Video file is empty (0 bytes)")
+			print(f"[ERROR] Video file is empty (0 bytes)")
 			return
 		
-		print(f" Video file exists ({file_size:,} bytes)")
+		print(f"[OK] Video file exists ({file_size:,} bytes)")
 
 		text_scl=max(0.5,round((self.background.shape[0]+self.background.shape[1])/1080,1))
 		text_tk=max(1,round((self.background.shape[0]+self.background.shape[1])/540))
@@ -1369,7 +1375,7 @@ class AnalyzeAnimalDetector():
 		
 		# Verify video file is readable
 		if not capture.isOpened():
-			print(f" Error: Cannot open video file: {self.path_to_video}")
+			print(f"[ERROR] Cannot open video file: {self.path_to_video}")
 			print("Possible reasons:")
 			print("  - File does not exist or is corrupted")
 			print("  - Unsupported video format/codec")
@@ -1379,14 +1385,14 @@ class AnalyzeAnimalDetector():
 		# Test reading first frame
 		test_ret, test_frame = capture.read()
 		if not test_ret or test_frame is None:
-			print(f" Error: Cannot read frames from video: {self.path_to_video}")
+			print(f"[ERROR] Cannot read frames from video: {self.path_to_video}")
 			print("Video file may be corrupted or in an unsupported format")
 			capture.release()
 			return
 		
 		# Reset to beginning
 		capture.set(cv2.CAP_PROP_POS_FRAMES, 0)
-		print(f" Video file verified: {capture.get(cv2.CAP_PROP_FRAME_COUNT)} frames, {capture.get(cv2.CAP_PROP_FPS):.2f} FPS")
+		print(f"[OK] Video file verified: {capture.get(cv2.CAP_PROP_FRAME_COUNT)} frames, {capture.get(cv2.CAP_PROP_FPS):.2f} FPS")
 		
 		writer=None
 		frame_count=frame_count_analyze=0
@@ -1616,7 +1622,7 @@ class AnalyzeAnimalDetector():
 										distance_traveled+=dt
 										d+=1
 									if normalize_distance:
- # Prevent math.sqrt error on negative or zero values  
+										# Prevent math.sqrt error on negative or zero values  
 										area_val = self.animal_area[animal_name] if self.animal_area[animal_name] is not None and self.animal_area[animal_name] > 0 else 1
 										calibrator=math.sqrt(area_val)
 										distance_traveled=distance_traveled/calibrator
@@ -1730,7 +1736,7 @@ class AnalyzeAnimalDetector():
 									distance_traveled+=dt
 									d+=1
 								if normalize_distance:
- # Prevent math.sqrt error on negative or zero values
+									# Prevent math.sqrt error on negative or zero values
 									area_val = self.animal_area[animal_name] if self.animal_area[animal_name] is not None and self.animal_area[animal_name] > 0 else 1
 									calibrator=math.sqrt(area_val)
 									distance_traveled=distance_traveled/calibrator
@@ -1916,7 +1922,7 @@ class AnalyzeAnimalDetector():
 		self.log.append('All results exported in: '+str(self.results_path))
 		self.log.append('Analysis completed!')
 		if len(self.log)>0:
- # Fix UnicodeEncodeError by specifying UTF-8 encoding
+			# Fix UnicodeEncodeError by specifying UTF-8 encoding
 			with open(os.path.join(self.results_path,'Analysis log.txt'),'w',encoding='utf-8') as analysis_log:
 				analysis_log.write('\n'.join(str(i) for i in self.log))
 
@@ -2294,7 +2300,7 @@ class AnalyzeAnimalDetector():
 									mask=goodmasks[x]
 									cnt=goodcontours[x]
 									moments = cv2.moments(cnt)
- # Skip zero area contours and maintain list consistency  
+									# Skip zero area contours and maintain list consistency  
 									if moments['m00'] != 0:
 										all_masks.append(mask)
 										all_contours.append(cnt)
@@ -2309,7 +2315,7 @@ class AnalyzeAnimalDetector():
 
 						centers_array=np.array(all_centers)
 						distances_squared=np.sum((centers_array[:,None]-centers_array)**2,axis=2)
- # Prevent division by zero when average_area is empty
+						# Prevent division by zero when average_area is empty
 						if len(average_area) > 0:
 							determine=np.logical_and(distances_squared>0,distances_squared<(math.sqrt(sum(average_area)/len(average_area))*self.social_distance)**2)
 						else:
@@ -2317,7 +2323,7 @@ class AnalyzeAnimalDetector():
 						other_contours=[[all_contours[x] for x,determ in enumerate(determine[y]) if determ] for y,c in enumerate(all_centers)]
 						if self.include_bodyparts:
 							other_inners=[[all_inners[x] for x,determ in enumerate(determine[y]) if determ] for y,c in enumerate(all_centers)]
- # Prevent np.stack error on empty arrays
+						# Prevent np.stack error on empty arrays
 						other_masks=[np.bitwise_or.reduce(np.stack(np.array(all_masks)[determine[x]])) if len(c)>0 and np.any(determine[x]) else None for x,c in enumerate(other_contours)]
 						for i,other_mask in enumerate(other_masks):
 							if background_free:
@@ -2372,7 +2378,7 @@ class AnalyzeAnimalDetector():
 							unused_existing_indices=list(self.animal_existingcenters[animal_name])
 							existing_centers=list(self.animal_existingcenters[animal_name].values())
 							unused_new_indices=list(range(len(animal_centers)))
- # Check for empty arrays before cdist to prevent ValueError
+							# Check for empty arrays before cdist to prevent ValueError
 							if len(existing_centers) > 0 and len(animal_centers) > 0:
 								dt_flattened=distance.cdist(existing_centers,animal_centers).flatten()
 								dt_sort_index=dt_flattened.argsort()
