@@ -1,6 +1,9 @@
 # Python
 __pycache__/
-*.py[cod]
+# NB: *.py[co], NOT *.py[cod]. A .pyd is a compiled Windows C extension
+# (LabGym/LabGym/detectron2/_C.cp3*-win_amd64.pyd) and MUST ship -- ignoring it
+# leaves Windows users with a broken detectron2.
+*.py[co]
 *.egg-info/
 *.egg
 build/
@@ -20,3 +23,20 @@ _labgrymace_cache.npz
 Thumbs.db
 .idea/
 .vscode/
+
+# --- Model weights and trained detectors ---
+# Never commit these: GitHub rejects files >100 MB and the full set is ~2 GB.
+# They are distributed separately -- see the "Models" section in README.md.
+LabGym/LabGym/detectors/
+LabGym/LabGym/models/
+*.pth
+*.keras
+*.h5
+*.pt
+
+# Example videos / datasets
+LabGym/Examples/
+
+# Scratch images accidentally left in the tree
+LabGym/**/Screenshot*.png
+LabGym/**/WechatIMG*.jpg
