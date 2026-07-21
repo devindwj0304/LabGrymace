@@ -1,9 +1,12 @@
 # LabGrYMace
 
 **LabGrYMace** (LabGym + *grimace*) quantifies **mouse facial expressions of pain**.
-It reads the tracking output of [LabGym](https://github.com/umyelab/LabGym), merges the
-per-frame intensity signals of the ear, eye, and nose regions, and produces a calibrated
-**pain score** (0 = baseline, 100 = 1 mg/kg CNO reference) through a point-and-click GUI.
+Starting from [LabGym](https://github.com/umyelab/LabGym)'s frame-by-frame tracking, it
+measures how much the ear, eye, and nose regions move, removes mirror-reflection
+artifacts, and merges the three signals into a single **pain score** calibrated to
+0 (baseline) and 100 (a 1 mg/kg CNO reference). Everything runs from a point-and-click
+GUI, which produces per-region summary spreadsheets, the pain-score analysis, and a copy
+of the video with the score overlaid on every frame.
 
 This repository contains two parts: **[`LabGrYMace/`](LabGrYMace)**, the pain-quantification
 tool, and **[`LabGym/`](LabGym)**, our modified LabGym 2.9.0 that produces the tracking
