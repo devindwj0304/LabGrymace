@@ -37,28 +37,44 @@ animal's behavior.
 
 ## Installation
 
-Requires **Python 3.9–3.11** (3.10 recommended). Runs on macOS and Windows.
+Requires **Python 3.10** (3.9 and 3.11 also work). Follow the block for your system.
+
+### macOS
 
 ```bash
 git clone https://github.com/devindwj0304/LabGym-LabGrYMace.git
 cd LabGym-LabGrYMace
-
-python3 -m venv .venv           # Windows: python -m venv .venv
-source .venv/bin/activate       # Windows: .venv\Scripts\activate
+python3 -m venv .venv
+source .venv/bin/activate
 pip install --upgrade pip
-pip install .                   # LabGrYMace         -> command: LabGrYMace
-pip install ./LabGym            # our modified LabGym -> command: LabGym_LabGrYMace
+pip install .            # installs LabGrYMace       -> run with: LabGrYMace
+pip install ./LabGym     # installs our LabGym build -> run with: LabGym_LabGrYMace
 ```
 
-On Apple Silicon, use a native arm64 Python — running under Rosetta crashes some
-scientific wheels. On Windows, tick **"Add python.exe to PATH"** in the installer.
+On Apple Silicon (M1–M4), use a native **arm64** Python from
+<https://www.python.org/downloads/macos/> — one running under Rosetta crashes some wheels.
 
-> **LabGrYMace requires our LabGym build — this is not optional.** It is installed as a
-> separate package, `LabGym_LabGrYMace` (version 2.9.0), and launches with the command
-> **`LabGym_LabGrYMace`**. Because it has its own name, it lives happily next to the
-> upstream `LabGym` (3.0.1): you can keep both in the same environment and never uninstall
-> or switch. The latest upstream LabGym alone will **not** work with LabGrYMace — it does
-> not produce the output LabGrYMace reads. See
+### Windows
+
+Install Python from <https://www.python.org/downloads/windows/> and tick
+**"Add python.exe to PATH"** during setup. Then, in **PowerShell**:
+
+```powershell
+git clone https://github.com/devindwj0304/LabGym-LabGrYMace.git
+cd LabGym-LabGrYMace
+python -m venv .venv
+.venv\Scripts\activate
+pip install --upgrade pip
+pip install .            # installs LabGrYMace       -> run with: LabGrYMace
+pip install ./LabGym     # installs our LabGym build -> run with: LabGym_LabGrYMace
+```
+
+If activation is blocked, run once and try again:
+`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
+
+> **The `LabGym_LabGrYMace` build is required — not optional.** LabGrYMace reads output
+> that only this 2.9.0 build produces; the latest upstream `LabGym` (3.0.1) will not work
+> with it. Because they have different names, both can be installed at once — see
 > [Two LabGyms, side by side](docs/LABGYM_CHANGES.md#two-labgyms-side-by-side).
 
 **Models are not included.** The trained detectors and categorizers are ~2 GB and exceed
