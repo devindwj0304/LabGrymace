@@ -111,6 +111,11 @@ python -m LabGrYMace
 python -m LabGym_LabGrYMace
 ```
 
+> **These are two independent windows.** `LabGrYMace` opens immediately.
+> **`LabGym_LabGrYMace` takes about 10–30 seconds to open** the first time — it loads
+> TensorFlow and detectron2 before the window appears, and the window can open *behind*
+> other windows. Wait for it, and check your Dock/taskbar; it did not fail to launch.
+
 ![LabGrYMace GUI](docs/images/gui.png)
 
 The workflow (in the **`LabGrYMace`** window) is two steps:

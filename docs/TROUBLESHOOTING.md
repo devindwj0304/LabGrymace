@@ -19,9 +19,13 @@ Run `pip install .` from the folder containing `pyproject.toml`, with the venv a
 **PowerShell blocks virtual-environment activation**
 Run once: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`, then try again.
 
-**The GUI doesn't appear**
-Check behind other windows — the Dock (macOS) or taskbar (Windows). The first launch
-takes 10–30 s while TensorFlow and detectron2 load.
+**`LabGym_LabGrYMace` seems not to launch (but `LabGrYMace` does)**
+It is launching — it just takes about **10–30 seconds** to open, because it loads
+TensorFlow and detectron2 first, while `LabGrYMace` opens instantly. Wait for it, and look
+**behind other windows** (the Dock on macOS, the taskbar on Windows). The two are separate
+programs: running `LabGrYMace` does not open the LabGym window, and vice versa — start each
+one with its own command. If the command is reported as not found, use
+`python -m LabGym_LabGrYMace`.
 
 **Which command launches our LabGym?**
 Our build installs as the package `LabGym_LabGrYMace` and launches with the command
