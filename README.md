@@ -48,11 +48,12 @@ cd LabGym-LabGrYMace
 python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
-pip install .            # installs LabGrYMace       -> run with: LabGrYMace
-pip install ./LabGym     # installs our LabGym build -> run with: LabGym_LabGrYMace
+pip install .
+pip install ./LabGym
 ```
 
-On Apple Silicon (M1–M4), use a native **arm64** Python from
+This installs two commands: **`LabGrYMace`** (the pain tool) and **`LabGym_LabGrYMace`**
+(our LabGym build). On Apple Silicon (M1–M4), use a native **arm64** Python from
 <https://www.python.org/downloads/macos/> — one running under Rosetta crashes some wheels.
 
 ### Windows
@@ -66,11 +67,12 @@ cd LabGym-LabGrYMace
 python -m venv .venv
 .venv\Scripts\activate
 pip install --upgrade pip
-pip install .            # installs LabGrYMace       -> run with: LabGrYMace
-pip install ./LabGym     # installs our LabGym build -> run with: LabGym_LabGrYMace
+pip install .
+pip install ./LabGym
 ```
 
-If activation is blocked, run once and try again:
+This installs two commands: **`LabGrYMace`** (the pain tool) and **`LabGym_LabGrYMace`**
+(our LabGym build). If activation is blocked, run once and try again:
 `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
 > **The `LabGym_LabGrYMace` build is required — not optional.** LabGrYMace reads output

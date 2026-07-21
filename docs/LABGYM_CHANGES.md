@@ -25,23 +25,31 @@ Because they now have **different package names and different commands, both can
 installed in the same environment at once** — no uninstalling, no switching:
 
 ```bash
-pip install LabGym          # upstream latest  -> launch with:  LabGym
-pip install ./LabGym        # this build       -> launch with:  LabGym_LabGrYMace
+pip install LabGym
+pip install ./LabGym
 ```
+
+The first installs upstream LabGym (launch with `LabGym`); the second installs this build
+(launch with `LabGym_LabGrYMace`).
 
 **How to run each one** (this is how you "activate" the LabGrYMace build):
 
 ```bash
-LabGym                      # opens upstream LabGym 3.0.1
-LabGym_LabGrYMace           # opens the 2.9.0 build that LabGrYMace needs
+LabGym
+LabGym_LabGrYMace
 ```
+
+`LabGym` opens upstream LabGym 3.0.1; `LabGym_LabGrYMace` opens the 2.9.0 build that
+LabGrYMace needs.
 
 **Check what is installed:**
 
 ```bash
 pip show LabGym LabGym_LabGrYMace
-python -c "import LabGym_LabGrYMace; print(LabGym_LabGrYMace.__version__)"   # -> 2.9.0
+python -c "import LabGym_LabGrYMace; print(LabGym_LabGrYMace.__version__)"
 ```
+
+The last line prints `2.9.0`.
 
 > **The 2.9.0 build is required for LabGrYMace — it is not an optional preference.**
 > LabGrYMace reads output fields and a categorizer format (`*.keras`) that this build
