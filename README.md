@@ -46,26 +46,28 @@ cd LabGym-LabGrYMace
 python3 -m venv .venv           # Windows: python -m venv .venv
 source .venv/bin/activate       # Windows: .venv\Scripts\activate
 pip install --upgrade pip
-pip install .                   # LabGrYMace
-pip install ./LabGym            # our modified LabGym
+pip install .                   # LabGrYMace         -> command: LabGrYMace
+pip install ./LabGym            # our modified LabGym -> command: LabGym_LabGrYMace
 ```
 
 On Apple Silicon, use a native arm64 Python — running under Rosetta crashes some
 scientific wheels. On Windows, tick **"Add python.exe to PATH"** in the installer.
 
-> **Already have the latest LabGym installed?** Our modified LabGym is version 2.9.0 and
-> shares the package name `LabGym` with upstream (currently 3.0.1), so only one can be
-> installed per environment. LabGrYMace needs this 2.9.0 build. See
-> [Switching between LabGym versions](docs/LABGYM_CHANGES.md#switching-between-this-labgym-and-the-latest-upstream-labgym)
-> for how to swap to the latest upstream and back.
+> **LabGrYMace requires our LabGym build — this is not optional.** It is installed as a
+> separate package, `LabGym_LabGrYMace` (version 2.9.0), and launches with the command
+> **`LabGym_LabGrYMace`**. Because it has its own name, it lives happily next to the
+> upstream `LabGym` (3.0.1): you can keep both in the same environment and never uninstall
+> or switch. The latest upstream LabGym alone will **not** work with LabGrYMace — it does
+> not produce the output LabGrYMace reads. See
+> [Two LabGyms, side by side](docs/LABGYM_CHANGES.md#two-labgyms-side-by-side).
 
 **Models are not included.** The trained detectors and categorizers are ~2 GB and exceed
 GitHub's file-size limit.
 
 > **Model download:** _to be added._
 
-Place a detector under `LabGym/LabGym/detectors/` and a categorizer under
-`LabGym/LabGym/models/`, then select it in the GUI.
+Place a detector under `LabGym/LabGym_LabGrYMace/detectors/` and a categorizer under
+`LabGym/LabGym_LabGrYMace/models/`, then select it in the GUI.
 
 ---
 

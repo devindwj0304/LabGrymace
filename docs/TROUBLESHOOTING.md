@@ -23,10 +23,15 @@ Run once: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`, then try again.
 Check behind other windows — the Dock (macOS) or taskbar (Windows). The first launch
 takes 10–30 s while TensorFlow and detectron2 load.
 
+**Which command launches our LabGym?**
+Our build installs as the package `LabGym_LabGrYMace` and launches with the command
+`LabGym_LabGrYMace` (the plain `LabGym` command belongs to upstream LabGym, if you also
+have it installed). See [Two LabGyms, side by side](LABGYM_CHANGES.md#two-labgyms-side-by-side).
+
 **LabGym can't find a detector or categorizer**
 Models are not shipped in this repository (see the Models section of the main README).
-Place a detector under `LabGym/LabGym/detectors/` and a categorizer under
-`LabGym/LabGym/models/`, one folder per model, then re-open the selection dialog.
+Place a detector under `LabGym/LabGym_LabGrYMace/detectors/` and a categorizer under
+`LabGym/LabGym_LabGrYMace/models/`, one folder per model, then re-open the selection dialog.
 
 **A categorizer is rejected as "Unsupported"**
 Its `model_parameters.txt` declares a behavior mode this build does not support. Train or

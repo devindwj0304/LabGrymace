@@ -8,47 +8,46 @@ Upstream: <https://github.com/umyelab/LabGym> (Ye Lab, University of Michigan), 
 
 ---
 
-## Switching between this LabGym and the latest upstream LabGym
+## Two LabGyms, side by side
 
-Both packages are named `LabGym`, so one Python environment can hold only **one** of
-them at a time. Upstream keeps releasing newer versions (e.g. 3.0.1, published 2026),
-while LabGrYMace needs **this** 2.9.0 build — it reads output fields and a model format
-(`*.keras`) that stock LabGym does not produce or consume the same way. You can switch
-back and forth freely.
+There are two different things called "LabGym", and it matters which one you run:
 
-**Check which one is currently installed:**
+| | **Upstream LabGym** | **This build (for LabGrYMace)** |
+|---|---|---|
+| What it is | the public LabGym, actively updated | LabGym 2.9.0 with our changes |
+| Latest version | 3.0.1 (2026) and rising | pinned at 2.9.0 |
+| pip package name | `LabGym` | `LabGym_LabGrYMace` |
+| Install with | `pip install LabGym` | `pip install ./LabGym` (from the repo root) |
+| Launch command | `LabGym` | `LabGym_LabGrYMace` |
+| Use it for | general LabGym work, newest features | producing the tracking output LabGrYMace reads |
 
-```bash
-python -c "import LabGym; print(LabGym.__version__)"
-```
-
-`2.9.0` is this build; `3.0.1` (or higher) is upstream.
-
-**Switch to the latest upstream LabGym** (for other projects):
+Because they now have **different package names and different commands, both can be
+installed in the same environment at once** — no uninstalling, no switching:
 
 ```bash
-pip uninstall -y LabGym
-pip install --upgrade LabGym
+pip install LabGym          # upstream latest  -> launch with:  LabGym
+pip install ./LabGym        # this build       -> launch with:  LabGym_LabGrYMace
 ```
 
-**Switch back to this build** (required before running LabGrYMace):
+**How to run each one** (this is how you "activate" the LabGrYMace build):
 
 ```bash
-pip uninstall -y LabGym
-pip install ./LabGym          # run from the repository root
+LabGym                      # opens upstream LabGym 3.0.1
+LabGym_LabGrYMace           # opens the 2.9.0 build that LabGrYMace needs
 ```
 
-**Recommended — keep two environments** so you never reinstall:
+**Check what is installed:**
 
 ```bash
-python3 -m venv .venv-labgrymace   # this build + LabGrYMace
-source .venv-labgrymace/bin/activate
-pip install ./LabGym .
-
-python3 -m venv .venv-upstream     # latest upstream LabGym
-source .venv-upstream/bin/activate
-pip install --upgrade LabGym
+pip show LabGym LabGym_LabGrYMace
+python -c "import LabGym_LabGrYMace; print(LabGym_LabGrYMace.__version__)"   # -> 2.9.0
 ```
+
+> **The 2.9.0 build is required for LabGrYMace — it is not an optional preference.**
+> LabGrYMace reads output fields and a categorizer format (`*.keras`) that this build
+> writes and upstream LabGym does not. Running LabGrYMace against output from upstream
+> LabGym (3.0.1) will not work. Always generate LabGrYMace's input with
+> `LabGym_LabGrYMace`.
 
 Activate whichever environment you need; nothing to uninstall.
 
@@ -111,8 +110,18 @@ TensorFlow runs on CPU. *(`tools.py`)*
 
 ## Vendored dependency
 
-`LabGym/LabGym/detectron2/` is a byte-identical copy of the detectron2 tree that upstream
-LabGym v2.9.1 vendors, including its pre-built Windows C extensions
-(`_C.cp39-win_amd64.pyd`, `_C.cp310-win_amd64.pyd`). It is required — `detector.py`
-imports it relatively — and is not our code. detectron2 is Apache-2.0 licensed
-(Meta Platforms, Inc.).
+`LabGym/LabGym_LabGrYMace/detectron2/` is the detectron2 tree that upstream LabGym v2.9.1
+vendors, including its pre-built Windows C extensions (`_C.cp39-win_amd64.pyd`,
+`_C.cp310-win_amd64.pyd`). It is required — `detector.py` imports it — and is not our
+code. The only change from the upstream copy is the import namespace: references were
+rewritten from `LabGym.detectron2` to `LabGym_LabGrYMace.detectron2` when the package was
+renamed (see [Two LabGyms, side by side](#two-labgyms-side-by-side)); the logic is
+untouched. detectron2 is Apache-2.0 licensed (Meta Platforms, Inc.).
+
+## Package name
+
+This build installs as `LabGym_LabGrYMace` rather than `LabGym`, and its launch command is
+`LabGym_LabGrYMace`. The rename is what lets it sit alongside the upstream `LabGym` package
+in one environment. The import namespace changed to match (`import LabGym_LabGrYMace`);
+model and detector folders are unaffected, since they are located relative to the package,
+not by name.
