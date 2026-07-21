@@ -8,6 +8,52 @@ Upstream: <https://github.com/umyelab/LabGym> (Ye Lab, University of Michigan), 
 
 ---
 
+## Switching between this LabGym and the latest upstream LabGym
+
+Both packages are named `LabGym`, so one Python environment can hold only **one** of
+them at a time. Upstream keeps releasing newer versions (e.g. 3.0.1, published 2026),
+while LabGrYMace needs **this** 2.9.0 build — it reads output fields and a model format
+(`*.keras`) that stock LabGym does not produce or consume the same way. You can switch
+back and forth freely.
+
+**Check which one is currently installed:**
+
+```bash
+python -c "import LabGym; print(LabGym.__version__)"
+```
+
+`2.9.0` is this build; `3.0.1` (or higher) is upstream.
+
+**Switch to the latest upstream LabGym** (for other projects):
+
+```bash
+pip uninstall -y LabGym
+pip install --upgrade LabGym
+```
+
+**Switch back to this build** (required before running LabGrYMace):
+
+```bash
+pip uninstall -y LabGym
+pip install ./LabGym          # run from the repository root
+```
+
+**Recommended — keep two environments** so you never reinstall:
+
+```bash
+python3 -m venv .venv-labgrymace   # this build + LabGrYMace
+source .venv-labgrymace/bin/activate
+pip install ./LabGym .
+
+python3 -m venv .venv-upstream     # latest upstream LabGym
+source .venv-upstream/bin/activate
+pip install --upgrade LabGym
+```
+
+Activate whichever environment you need; nothing to uninstall.
+
+---
+
 ## Added capabilities
 
 - **Individual-specific behavior filtering** — each animal in a recording can be scored

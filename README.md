@@ -53,6 +53,12 @@ pip install ./LabGym            # our modified LabGym
 On Apple Silicon, use a native arm64 Python — running under Rosetta crashes some
 scientific wheels. On Windows, tick **"Add python.exe to PATH"** in the installer.
 
+> **Already have the latest LabGym installed?** Our modified LabGym is version 2.9.0 and
+> shares the package name `LabGym` with upstream (currently 3.0.1), so only one can be
+> installed per environment. LabGrYMace needs this 2.9.0 build. See
+> [Switching between LabGym versions](docs/LABGYM_CHANGES.md#switching-between-this-labgym-and-the-latest-upstream-labgym)
+> for how to swap to the latest upstream and back.
+
 **Models are not included.** The trained detectors and categorizers are ~2 GB and exceed
 GitHub's file-size limit.
 
