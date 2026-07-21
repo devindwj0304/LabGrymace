@@ -23,7 +23,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = 'https://github.com/devindwj0304/LabGrYMace'
+Homepage = 'https://github.com/devindwj0304/LabGym-LabGrYMace'
 
 # `LabGrYMace` becomes a terminal command that launches the GUI after install.
 [project.scripts]

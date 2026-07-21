@@ -68,9 +68,9 @@ classifiers=[
 dynamic=['version']
 
 [project.urls]
-Homepage='http://github.com/umyelab/LabGym'
-Documentation='https://labgym.readthedocs.io/en/latest/'
-Issues='http://github.com/umyelab/LabGym/issues'
+Homepage='https://github.com/devindwj0304/LabGym-LabGrYMace'
+Documentation='https://github.com/devindwj0304/LabGym-LabGrYMace/blob/main/README.md'
+Issues='https://github.com/devindwj0304/LabGym-LabGrYMace/issues'
 
 [project.scripts]
 LabGym_LabGrYMace='LabGym_LabGrYMace.__main__:main'

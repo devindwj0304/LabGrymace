@@ -92,13 +92,28 @@ Place a detector under `LabGym/LabGym_LabGrYMace/detectors/` and a categorizer u
 
 ## Usage
 
+### Launching
+
+Activate your virtual environment first. Two GUIs are installed — **`LabGrYMace`** is the
+pain-scoring tool, and **`LabGym_LabGrYMace`** is our LabGym build (run it to produce the
+tracking output that LabGrYMace reads):
+
 ```bash
 LabGrYMace
+LabGym_LabGrYMace
+```
+
+If a command is *not found* — a PATH issue, common when the virtual environment sits
+inside a conda base — launch the same window through Python instead. This always works:
+
+```bash
+python -m LabGrYMace
+python -m LabGym_LabGrYMace
 ```
 
 ![LabGrYMace GUI](docs/images/gui.png)
 
-The workflow is two steps:
+The workflow (in the **`LabGrYMace`** window) is two steps:
 
 1. **Generate summary files** — point it at a folder of LabGym output. This writes the
    three `*_summary.xlsx` files into each recording's folder. Tick the correlation box to
