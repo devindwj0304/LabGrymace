@@ -30,9 +30,12 @@ matrix across the intensity parameters, with a heatmap.
 
 **3. Video with the pain score overlaid** — an `.mp4` copy of the recording with the
 running pain score burned into each frame, so the score can be watched against the
-animal's behavior.
+animal's behavior. Below, a mouse under high-dose CNO (in pain, high score) next to a
+baseline mouse (no pain, low score):
 
-![Overlay video](docs/images/output-overlay.gif)
+| High CNO — in pain | Baseline — no pain |
+|:---:|:---:|
+| ![High-CNO overlay](docs/images/output-overlay-highcno.gif) | ![Baseline overlay](docs/images/output-overlay-baseline.gif) |
 
 ---
 
