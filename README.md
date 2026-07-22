@@ -8,7 +8,7 @@
 
 This repository contains two parts: 
 - **[`LabGrYMace`](LabGrYMace)**, the graphical application for pain-score computation and visualization.
-- **[`LabGym`](LabGym)**, a modified version of LabGym 2.9.0, which performs facial region tracking and generates the input files used by LabGrYMace.
+- **[`LabGym.face`](LabGym)**, a modified version of LabGym 2.9.0, which performs facial region tracking and generates the input files used by LabGrYMace.
 
 ---
 
