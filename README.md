@@ -8,30 +8,31 @@
 
 This repository contains two parts: 
 - **[`LabGrYMace`](LabGrYMace)**, the graphical application for pain-score computation and visualization.
-- **[`LabGym.face`](LabGym)**, a modified version of LabGym 2.9.0, which performs facial region tracking and generates the input files used by LabGrYMace.
+- **[`LabGym_LabGrYMace`](LabGym)**, a modified version of LabGym 2.9.0, which performs facial region tracking and generates the input files used by LabGrYMace.
 
 ---
 
-## The outputs of LabGrYMace include:
+## The outputs of LabGrYMace:
 
-**1. Summary spreadsheets** — `ear_summary.xlsx`, `eye_summary.xlsx`, `nose_summary.xlsx`,
-one set per recording, holding the per-frame intensity table for each facial region.
-Frames removed by the mirror-reflection filter are marked **orange**; the merged column
-feeding the pain score is **yellow**.
+**1. Summary spreadsheets** — Three Excel files (`ear_summary.xlsx`, `eye_summary.xlsx`, `nose_summary.xlsx`) containingframe-by-frame measurements for each facial region. Frames removed by the mirror-reflection filter are highlighted in **orange**, and the merged measurements used for pain-score calculation are highlighted in **yellow**.
 
 ![Summary spreadsheet](docs/images/output-summary.png)
 
-**2. Pain score analysis** — `pain_scores.xlsx` (one score per recording),
-`pain_scores_per_frame.xlsx` (the full time course), and the charts
-`pain_score_chart.png` / `overall_pain_score_chart.png`. Optionally a 9×9 correlation
-matrix across the intensity parameters, with a heatmap.
+**2. Pain score analysis** 
+
+The analysis includes:
+- **`pain_scores.xlsx`** — one overall pain score for each recording.
+- **`pain_scores_per_frame.xlsx`** — frame-by-frame pain scores for the entire recording.
+- **`pain_score_chart.png`** and **`overall_pain_score_chart.png`** — plots of pain-score dynamics and overall pain scores.
+- *(Optional)* A **9 × 9 correlation matrix** and heatmap showing correlations among the nine facial intensity parameters.
 
 ![Pain score](docs/images/output-painscore.png)
 
-**3. Video with the pain score overlaid** — an `.mp4` copy of the recording with the
-running pain score burned into each frame, so the score can be watched against the
-animal's behavior. Below, a mouse under high-dose CNO (in pain, high score) next to a
-baseline mouse (no pain, low score):
+**3. Annotated video**
+
+An `.mp4` copy of the original recording with the continuously updated pain score overlaid on each frame, allowing direct comparison between the quantified pain score and the animal's behavior.
+
+Below is an example comparing a mouse experiencing chemical-induced pain (high pain score) with a baseline mouse (low pain score):
 
 | High CNO — in pain | Baseline — no pain |
 |:---:|:---:|
@@ -41,14 +42,12 @@ baseline mouse (no pain, low score):
 
 ## Installation
 
-Requires **Python 3.10** (3.9 and 3.11 also work). Follow the block for your system.
+Requires **Python 3.10** (Python 3.9 and 3.11 are also supported). 
 
-> **Install into an isolated environment — never into conda `base`.** These packages pin
-> specific versions of TensorFlow and NumPy, so installing them into `base` (or any shared
-> environment) downgrades those libraries and can break other tools *and this one*. Always
-> create a dedicated environment first and make sure it is **active** (your prompt shows
-> its name, e.g. `(.venv)` or `(labgrymace)`) before running `pip install`. If you use
-> Miniconda/Anaconda, a named conda environment is the most reliable choice:
+> **Use a dedicated environment—never install into the conda `base` environment.**
+> LabGrYMace depends on specific versions of TensorFlow and NumPy. Installing it into a shared environment may downgrade these packages and break other software. Create a dedicated environment before installing and make sure it is **active** (your prompt shows its name, e.g. `(.venv)` or `(labgrymace)`) before running `pip install`.
+>
+> If you use Miniconda or Anaconda, a named conda environment is the most reliable choice:
 >
 > ```bash
 > conda create -n labgrymace python=3.10 -y
@@ -70,13 +69,12 @@ pip install ./LabGym
 ```
 
 This installs two commands: **`LabGrYMace`** (the pain tool) and **`LabGym_LabGrYMace`**
-(our LabGym build). On Apple Silicon (M1–M4), use a native **arm64** Python from
-<https://www.python.org/downloads/macos/> — one running under Rosetta crashes some wheels.
+(our modified LabGym build). On Apple Silicon (M1–M4), use a native **arm64** Python from
+<https://www.python.org/downloads/macos/>. Running under Rosetta may prevent TensorFlow from installing or running correctly.
 
 ### Windows
 
-Install Python from <https://www.python.org/downloads/windows/> and tick
-**"Add python.exe to PATH"** during setup. Then, in **PowerShell**:
+Install Python from <https://www.python.org/downloads/windows/> and select **"Add python.exe to PATH"** during installation. Then open **PowerShell** and run:
 
 ```powershell
 git clone https://github.com/devindwj0304/LabGym-LabGrYMace.git
@@ -89,18 +87,17 @@ pip install ./LabGym
 ```
 
 This installs two commands: **`LabGrYMace`** (the pain tool) and **`LabGym_LabGrYMace`**
-(our LabGym build). If activation is blocked, run once and try again:
+(our modified LabGym build). 
+
+If PowerShell blocks environment activation, run the following command once, then try again:
 `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
-> **The `LabGym_LabGrYMace` build is required — not optional.** LabGrYMace reads output
-> that only this 2.9.0 build produces; the latest upstream `LabGym` (3.0.1) will not work
-> with it. Because they have different names, both can be installed at once — see
-> [Two LabGyms, side by side](docs/LABGYM_CHANGES.md#two-labgyms-side-by-side).
+> **The `LabGym_LabGrYMace` build is required — not optional.** LabGrYMace reads output generated only by this modified LabGym 2.9.0 build. The latest `LabGym` (v3.x) is **not compatible**. Because the two packages have different names, they can be installed side by side. See [Two LabGyms, side by side](docs/LABGYM_CHANGES.md#two-labgyms-side-by-side).
 
 **Models are not included.** The trained detectors and categorizers are ~2 GB and exceed
 GitHub's file-size limit.
 
-> **Model download:** _to be added._
+> **Model download:** *Coming soon.*
 
 Place a detector under `LabGym/LabGym_LabGrYMace/detectors/` and a categorizer under
 `LabGym/LabGym_LabGrYMace/models/`, then select it in the GUI.
@@ -111,42 +108,43 @@ Place a detector under `LabGym/LabGym_LabGrYMace/detectors/` and a categorizer u
 
 ### Launching
 
-Activate your virtual environment first. Two GUIs are installed — **`LabGrYMace`** is the
-pain-scoring tool, and **`LabGym_LabGrYMace`** is our LabGym build (run it to produce the
-tracking output that LabGrYMace reads):
+Activate your virtual environment first. Two GUI applications are installed 
+- **`LabGrYMace`**: computes pain scores from LabGym output.
+- **`LabGym_LabGrYMace`**: our modified LabGym build that generates the tracking output used by LabGrYMace.
+ 
+Launch them from the command line:
 
 ```bash
 LabGrYMace
 LabGym_LabGrYMace
 ```
 
-If a command is *not found* — a PATH issue, common when the virtual environment sits
-inside a conda base — launch the same window through Python instead. This always works:
+If either command is not found (usually because your virtual environment is not on the PATH), launch it through Python instead:
 
 ```bash
 python -m LabGrYMace
 python -m LabGym_LabGrYMace
 ```
 
-> **These are two independent windows.** `LabGrYMace` opens immediately.
-> **`LabGym_LabGrYMace` takes about 10–30 seconds to open** the first time — it loads
-> TensorFlow and detectron2 before the window appears, and the window can open *behind*
-> other windows. Wait for it, and check your Dock/taskbar; it did not fail to launch.
+> **The two applications run independently.** `LabGrYMace` opens immediately. 
+> **`LabGym_LabGrYMace` typically takes 10–30 seconds to start** the first time because it loads TensorFlow and Detectron2 before the GUI appears.
 
 ![LabGrYMace GUI](docs/images/gui.png)
 
-The workflow (in the **`LabGrYMace`** window) is two steps:
+The **`LabGrYMace`** workflow consists of two steps:
 
-1. **Generate summary files** — point it at a folder of LabGym output. This writes the
-   three `*_summary.xlsx` files into each recording's folder. Tick the correlation box to
-   also export the 9×9 matrix and heatmap.
-2. **Compute pain scores** — point it at those summary folders. This writes
-   `pain_scores.xlsx` and the charts, and can generate the overlay video.
+1. **Generate summary files** — Select the folder containing the LabGym output. LabGrYMace generates `ear_summary.xlsx`, `eye_summary.xlsx`, and `nose_summary.xlsx` files for each recording. Optionally, enable the correlation analysis to export a 9 × 9 correlation matrix and heatmap.
+2. **Compute pain scores** — Select the folders containing the summary files. LabGrYMace generates `pain_scores.xlsx`, `pain_scores_per_frame.xlsx`, summary charts, and (optionally) an annotated video with pain score overlaid on each frame.
 
-The mirror-reflection filter is **off by default** and is a checkbox in step 2. The
-published figures were produced with it on; the reproduction scripts set it explicitly.
+The reflection filter is **disabled by default** and can be enabled with a checkbox during step 2. The figures in the accompanying manuscript were generated with this filter enabled, and the reproduction scripts set it automatically.
 
-Also available from the command line and from Python:
+## Advanced usage
+
+Most users will use the graphical interface, but the core functions can also be called from the command line or imported into Python scripts.
+
+### Command line
+
+Generate summary files from a folder containing LabGym output:
 
 ```bash
 python -m LabGrYMace.loaddata "/path/to/folder/of/LabGym/datasets"
@@ -165,15 +163,14 @@ print("overall pain score:", round(score, 2))
 
 ## Documentation
 
-- **[How our LabGym differs from upstream](docs/LABGYM_CHANGES.md)** — what we added and
-  which changes alter results
-- **[Troubleshooting](docs/TROUBLESHOOTING.md)**
+- **[How LabGym_GrYMace differs from upstream](docs/LABGYM_CHANGES.md)** — describes the modifications made to LabGym and identifies those that affect results.
+- **[Troubleshooting](docs/TROUBLESHOOTING.md)** — solutions to common installation and usage issues.
 
 ---
 
 ## License
+LabGrYMace is licensed under **GPL-3.0** (see [`LICENSE`](LICENSE)).
 
-**GPL-3.0** ([`LICENSE`](LICENSE)). Built on **LabGym** (Ye Lab, University of Michigan),
-also GPL-3.0, whose attribution and license are preserved in
-[`LabGym/LICENSE.txt`](LabGym/LICENSE.txt). If you use LabGrYMace in research, please
-cite LabGym as well.
+This repository includes a modified version of **LabGym** (Ye Lab, University of Michigan), which is licensed under **GPL-3.0**. The original attribution and license are preserved in [`LabGym/LICENSE.txt`](LabGym/LICENSE.txt).
+
+If you use LabGrYMace in published research, please cite both **LabGrYMace** and **LabGym**.
