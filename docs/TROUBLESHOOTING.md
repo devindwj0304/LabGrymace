@@ -1,9 +1,28 @@
 # Troubleshooting
 
+**LabGrYMace worked yesterday but breaks today, after installing LabGym**
+You almost certainly installed into conda `base` (the prompt showed `(base)`, not your
+environment name), and `pip install ./LabGym` downgraded NumPy/TensorFlow in `base`. That
+breaks the compiled libraries LabGrYMace relies on (pandas, OpenCV, matplotlib), so it now
+fails with errors like `numpy.dtype size changed`. Fix it by using a **dedicated
+environment** instead of `base`:
+
+```bash
+conda create -n labgrymace python=3.10 -y
+conda activate labgrymace
+cd LabGym-LabGrYMace
+pip install .
+pip install ./LabGym
+```
+
+To repair the polluted `base` afterwards: `pip uninstall -y LabGrYMace LabGym_LabGrYMace`,
+then reinstall whatever `base` needed (or `conda install -n base --force-reinstall numpy`).
+The simplest habit is to never `pip install` into `base`.
+
 **`command not found: LabGrYMace` (macOS) / `'LabGrYMace' is not recognized` (Windows)**
-The virtual environment isn't active, or the install didn't finish. Re-activate it
-(`source .venv/bin/activate` / `.venv\Scripts\activate`) and re-run `pip install .`.
-`python -m LabGrYMace` always works as a fallback.
+The environment isn't active, or the install didn't finish. Re-activate it
+(`conda activate labgrymace`, or `source .venv/bin/activate` / `.venv\Scripts\activate`)
+and re-run `pip install .`. `python -m LabGrYMace` always works as a fallback.
 
 **pip tries to build wxPython from source and fails**
 Run `pip install --upgrade pip` first so it finds the pre-built wheel. On Linux, install a

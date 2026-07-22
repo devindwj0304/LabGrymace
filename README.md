@@ -40,6 +40,20 @@ animal's behavior.
 
 Requires **Python 3.10** (3.9 and 3.11 also work). Follow the block for your system.
 
+> **Install into an isolated environment — never into conda `base`.** These packages pin
+> specific versions of TensorFlow and NumPy, so installing them into `base` (or any shared
+> environment) downgrades those libraries and can break other tools *and this one*. Always
+> create a dedicated environment first and make sure it is **active** (your prompt shows
+> its name, e.g. `(.venv)` or `(labgrymace)`) before running `pip install`. If you use
+> Miniconda/Anaconda, a named conda environment is the most reliable choice:
+>
+> ```bash
+> conda create -n labgrymace python=3.10 -y
+> conda activate labgrymace
+> ```
+>
+> Then run the two `pip install` lines below inside it (skip the `venv` step).
+
 ### macOS
 
 ```bash
