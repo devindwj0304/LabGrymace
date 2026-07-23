@@ -1,3 +1,11 @@
+> **This folder is not upstream LabGym.** It is LabGym 2.9.0 modified for
+> [LabGrymace](../README.md), installed as the package `LabGym_LabGrymace` and launched
+> with the command `LabGym_LabGrymace`. Install it with `pip install ./LabGym` from the
+> repository root — *not* with `pip install LabGym`, which fetches the unmodified upstream
+> release. See [docs/LABGYM_CHANGES.md](../docs/LABGYM_CHANGES.md) for what differs.
+>
+> The rest of this page is the upstream LabGym README, kept for reference.
+
 # LabGym: quantifying user-defined behaviors
 
 [![PyPI - Version](https://img.shields.io/pypi/v/LabGym)](https://pypi.org/project/LabGym/)
