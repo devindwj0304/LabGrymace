@@ -24,7 +24,6 @@ The analysis includes:
 - **`pain_scores.xlsx`** — one overall pain score for each recording.
 - **`pain_scores_per_frame.xlsx`** — frame-by-frame pain scores for the entire recording.
 - **`pain_score_chart.png`** and **`overall_pain_score_chart.png`** — plots of pain-score dynamics and overall pain scores.
-- *(Optional)* A **9 × 9 correlation matrix** and heatmap showing correlations among the nine facial intensity parameters.
 
 ![Pain score](docs/images/output-painscore.png)
 
@@ -133,7 +132,7 @@ python -m LabGym_LabGrymace
 
 The **`LabGrymace`** workflow consists of two steps:
 
-1. **Generate summary files** — Select the folder containing the LabGym output. LabGrymace generates `ear_summary.xlsx`, `eye_summary.xlsx`, and `nose_summary.xlsx` files for each recording. Optionally, enable the correlation analysis to export a 9 × 9 correlation matrix and heatmap.
+1. **Generate summary files** — Select the folder containing the LabGym output. LabGrymace generates `ear_summary.xlsx`, `eye_summary.xlsx`, and `nose_summary.xlsx` files for each recording.
 2. **Compute pain scores** — Select the folders containing the summary files. LabGrymace generates `pain_scores.xlsx`, `pain_scores_per_frame.xlsx`, summary charts, and (optionally) an annotated video with pain score overlaid on each frame.
 
 The reflection filter is **disabled by default** and can be enabled with a checkbox during step 2. The figures in the accompanying manuscript were generated with this filter enabled, and the reproduction scripts set it automatically.
