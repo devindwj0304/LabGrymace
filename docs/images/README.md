@@ -1,15 +1,15 @@
 # Images used by the top-level README
 
-Drop screenshots / GIFs here with these exact names and they will appear in the
-main README automatically (no other edit needed):
+The main README references these by name, so replacing a file updates the README with no
+other edit. Keep each under ~5 MB, and GIFs at 5-10 s and <= 640 px wide.
 
-| File | What it should show |
+| File | What it shows |
 |---|---|
-| `output-summary.png`         | A `*_summary.xlsx` open in Excel — the Summary sheet, ideally with the yellow merged column and an orange mirror-filtered row visible |
-| `output-painscore.png`       | `pain_scores.xlsx` or `pain_score_chart.png` — the per-recording pain score |
-| `output-overlay-highcno.gif` | A few seconds of an overlay video for a mouse in pain (high score) |
-| `output-overlay-baseline.gif`| A few seconds of an overlay video for a baseline mouse (low score) |
-| `gui.png`                    | The LabGrymace main window |
+| `gui.png`                     | The LabGrymace main window |
+| `output-summary.png`          | A `*_summary.xlsx` Summary sheet, with the yellow merged column and an orange mirror-filtered row |
+| `output-painscore.png`        | The per-recording pain score, from `pain_scores.xlsx` |
+| `output-overlay-highcno.gif`  | Overlay video of a mouse under high-dose CNO (high pain score) |
+| `output-overlay-baseline.gif` | Overlay video of a baseline mouse (low pain score) |
 
-Keep each file under ~5 MB so the repository stays quick to clone.
-GIFs: 5-10 s, <= 640 px wide is plenty.
+The two GIFs are rendered at the same 480x531 box so they line up side by side in the
+README table.
