@@ -1795,6 +1795,8 @@ def _correlation_heatmap(corr, out_png, title=None):
     plt.close(fig)
 
 
+# Not exposed in the GUI. Kept as a library function so the Figure 3 reproduction
+# scripts can still import it.
 def export_merged_correlation_table(sessions, organ, behavior, bilateral, out_xlsx):
     '''Export the Figure-3 correlation INPUT as a reviewer-readable merged table.
 
@@ -2220,14 +2222,6 @@ class _PainScoreDropTarget(wx.FileDropTarget):
         return True
 
 
-# Organ -> (pain behavior label, bilateral, output basename) for the correlation step.
-_CORR_ORGAN_CFG = {
-    'ear':  ('PB',  True,  'ear_pulling_behind'),
-    'eye':  ('OT',  True,  'eye_orbital_tightening'),
-    'nose': ('Bul', False, 'nose_bulging'),
-}
-
-
 class WindowLv2_GenerateSummary(wx.Frame):
     '''
     Lets the user pick a folder of LabGym _processed output, then runs
@@ -2239,7 +2233,6 @@ class WindowLv2_GenerateSummary(wx.Frame):
         super(WindowLv2_GenerateSummary, self).__init__(parent=None, title=title, size=(900, 680))
         self._detected   = []   # [(name, raw_folder_path), ...]
         self._output_dir = None
-        self._corr_output_dir = None   # where correlation tables/heatmaps go (optional)
         self.display_window()
 
     def display_window(self):
@@ -2290,48 +2283,6 @@ class WindowLv2_GenerateSummary(wx.Frame):
         row2.Add(self.lbl_output, 1, wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 5)
         vbox.Add(row2, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
         vbox.Add(0, 10, 0)
-
-        # ── Row 2b: optional correlation (pain behavior) from the summaries ──
-        vbox.Add(wx.StaticLine(panel), 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
-        vbox.Add(0, 6, 0)
-        self.chk_corr = wx.CheckBox(
-            panel, label='Also generate facial-parameter CORRELATION + heatmap (pain behavior)')
-        self.chk_corr.SetValue(False)   # opt-in
-        wx.CheckBox.SetToolTip(
-            self.chk_corr,
-            'After the summary files are generated, also compute the Pearson correlation\n'
-            'between the 9 facial parameters DURING the pain behavior (ear = pulling-behind,\n'
-            'eye = orbital-tightening, nose = bulging), pooled across the animals listed above.\n'
-            'This is a PAIN-related analysis (Figure 3) and needs the summary files — which is\n'
-            'exactly why it runs here, right after they are generated.')
-        vbox.Add(self.chk_corr, 0, wx.LEFT | wx.RIGHT, 20)
-        corr_note = wx.StaticText(panel, label=(
-            'Correlation is computed over PAIN-behavior frames only, pooled across the animals '
-            'above (Figure 3).\nIt reuses the summary files generated in this same step.'))
-        corr_note.SetForegroundColour(wx.Colour(90, 90, 90))
-        vbox.Add(corr_note, 0, wx.LEFT | wx.RIGHT | wx.TOP, 20)
-        vbox.Add(0, 6, 0)
-
-        # ── Row 2c: correlation output folder ──
-        row_corr = wx.BoxSizer(wx.HORIZONTAL)
-        btn_corr_out = wx.Button(panel, label='Select correlation\noutput folder', size=(220, 44))
-        btn_corr_out.Bind(wx.EVT_BUTTON, self.pick_corr_output)
-        wx.Button.SetToolTip(
-            btn_corr_out,
-            'Where the correlation tables and heatmaps are saved (one set per organ):\n'
-            '  <organ>_pain_correlation.xlsx  (About + Correlation_9x9 + Per_recording_mean\n'
-            '                                   + Merged_per_frame)\n'
-            '  <organ>_pain_correlation_heatmap.png\n'
-            'If left as "None", they are saved in a "correlation" subfolder of the summary output.')
-        self.lbl_corr_output = wx.StaticText(
-            panel, label='None  (defaults to <summary output>/correlation).',
-            style=wx.ALIGN_LEFT | wx.ST_ELLIPSIZE_END)
-        row_corr.Add(btn_corr_out,         0, wx.LEFT | wx.RIGHT, 10)
-        row_corr.Add(self.lbl_corr_output, 1, wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 5)
-        vbox.Add(row_corr, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
-        vbox.Add(0, 6, 0)
-        vbox.Add(wx.StaticLine(panel), 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
-        vbox.Add(0, 8, 0)
 
         # ── Row 3: Generate button ──
         btn_gen = wx.Button(panel, label='Generate summary files for all listed animals', size=(380, 36))
@@ -2402,14 +2353,6 @@ class WindowLv2_GenerateSummary(wx.Frame):
             self.lbl_output.SetLabel(self._output_dir)
         dlg.Destroy()
 
-    def pick_corr_output(self, event):
-        dlg = wx.DirDialog(self, 'Select folder to save the correlation tables/heatmaps',
-                           style=wx.DD_DEFAULT_STYLE | wx.DD_NEW_DIR_BUTTON)
-        if dlg.ShowModal() == wx.ID_OK:
-            self._corr_output_dir = dlg.GetPath()
-            self.lbl_corr_output.SetLabel(self._corr_output_dir)
-        dlg.Destroy()
-
     def run_generate(self, event):
         if not self._detected:
             wx.MessageBox('Please select a raw data folder first.', 'Nothing to do',
@@ -2455,72 +2398,15 @@ class WindowLv2_GenerateSummary(wx.Frame):
         self._log('')
         self._log(f'Done — {ok} generated, {skip} skipped, {fail} failed.')
 
-        # Optional: facial-parameter correlation (pain behavior) from the summaries
-        corr_msg = ''
-        if self.chk_corr.GetValue():
-            corr_msg = self._run_correlation(available)
-
         if fail == 0:
             dest = self._output_dir or '(each animal folder)'
             wx.MessageBox(
                 f'Summary files generated successfully.\n\n'
                 f'{ok} animal(s) processed, {skip} already existed.\n\n'
-                f'Output location: {dest}\n{corr_msg}\n'
+                f'Output location: {dest}\n'
                 f'Now open Step 2 (Pain Score) and select that output folder.',
                 'Done', wx.OK | wx.ICON_INFORMATION,
             )
-
-    def _run_correlation(self, available):
-        '''Compute the pain-behavior correlation tables + heatmaps from the just-generated
-        summaries in `available` = [(name, folder), ...]. Returns a one-line status string
-        for the final dialog. Logs progress to the window.'''
-        if not available:
-            self._log('[CORR]  skipped — no folders with summary files were available.')
-            return '\nCorrelation: skipped (no summary files available).'
-        # Resolve output folder: explicit choice, else <summary output>/correlation.
-        if self._corr_output_dir:
-            corr_dir = self._corr_output_dir
-        elif self._output_dir:
-            corr_dir = str(Path(self._output_dir) / 'correlation')
-        else:
-            self._log('[CORR]  skipped — please select a "correlation output folder" '
-                      '(summaries were saved alongside the raw data, so there is no default).')
-            return '\nCorrelation: skipped (no output folder selected).'
-        try:
-            os.makedirs(corr_dir, exist_ok=True)
-        except Exception as exc:
-            self._log(f'[CORR]  ERROR creating {corr_dir}: {exc}')
-            return '\nCorrelation: skipped (could not create output folder).'
-
-        self._log('')
-        self._log(f'[CORR]  Correlation over PAIN-behavior frames, pooled across '
-                  f'{len(available)} recording(s) → {corr_dir}')
-        done = 0
-        for organ, (behavior, bilateral, base) in _CORR_ORGAN_CFG.items():
-            out_xlsx = str(Path(corr_dir) / f'{base}_pain_correlation.xlsx')
-            self._log(f'        [{organ}] behavior={behavior} … reading summaries (can take a while)')
-            wx.GetApp().Yield()
-            try:
-                pooled = export_merged_correlation_table(
-                    available, organ, behavior, bilateral, out_xlsx)
-                if pooled is None or not len(pooled):
-                    self._log(f'           → no "{behavior}" frames found — skipped.')
-                else:
-                    self._log(f'           → {len(pooled)} pooled pain frames from '
-                              f'{pooled["Recording"].nunique()} recording(s) '
-                              f'→ {os.path.basename(out_xlsx)} (+ heatmap.png)')
-                    done += 1
-            except Exception as exc:
-                import traceback
-                self._log(f'           → ERROR: {exc}')
-                self._log(traceback.format_exc())
-        self._log(f'[CORR]  Correlation done — {done}/3 organ table(s) written to {corr_dir}')
-        return (f'\nCorrelation ({done}/3 organs, pain behavior) → {corr_dir}')
-
-
-# ============================================================================
-# Video–Animal Pair Dialog
-# ============================================================================
 
 class VideoAnimalPairDialog(wx.Dialog):
     '''
