@@ -14,7 +14,7 @@ This repository contains two parts:
 
 ## The outputs of LabGrymace:
 
-**1. Summary spreadsheets** — Three Excel files (`ear_summary.xlsx`, `eye_summary.xlsx`, `nose_summary.xlsx`) containingframe-by-frame measurements for each facial region. Frames removed by the mirror-reflection filter are highlighted in **orange**, and the merged measurements used for pain-score calculation are highlighted in **yellow**.
+**1. Summary spreadsheets** — Three Excel files (`ear_summary.xlsx`, `eye_summary.xlsx`, `nose_summary.xlsx`) containing frame-by-frame measurements for each facial region. Frames removed by the mirror-reflection filter are highlighted in **orange**, and the merged measurements used for pain-score calculation are highlighted in **yellow**.
 
 ![Summary spreadsheet](docs/images/output-summary.png)
 
@@ -163,7 +163,7 @@ print("overall pain score:", round(score, 2))
 
 ## Documentation
 
-- **[How LabGym_GrYMace differs from upstream](docs/LABGYM_CHANGES.md)** — describes the modifications made to LabGym and identifies those that affect results.
+- **[How LabGym_LabGrymace differs from upstream](docs/LABGYM_CHANGES.md)** — describes the modifications made to LabGym and identifies those that affect results.
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** — solutions to common installation and usage issues.
 
 ---
