@@ -1,7 +1,7 @@
 # How our LabGym differs from upstream v2.9.0
 
 [`LabGym/`](../LabGym) is **LabGym v2.9.0** with the upstream v2.9.1 logging/CLI update
-backported, plus the changes below. It is included in this repository because LabGrYMace
+backported, plus the changes below. It is included in this repository because LabGrymace
 consumes its output, and several of these changes are what make that output usable.
 
 Upstream: <https://github.com/umyelab/LabGym> (Ye Lab, University of Michigan), GPL-3.0.
@@ -12,52 +12,26 @@ Upstream: <https://github.com/umyelab/LabGym> (Ye Lab, University of Michigan), 
 
 There are two different things called "LabGym", and it matters which one you run:
 
-| | **Upstream LabGym** | **This build (for LabGrYMace)** |
+| | **Upstream LabGym** | **This build (for LabGrymace)** |
 |---|---|---|
 | What it is | the public LabGym, actively updated | LabGym 2.9.0 with our changes |
 | Latest version | 3.0.1 (2026) and rising | pinned at 2.9.0 |
-| pip package name | `LabGym` | `LabGym_LabGrYMace` |
+| pip package name | `LabGym` | `LabGym_LabGrymace` |
 | Install with | `pip install LabGym` | `pip install ./LabGym` (from the repo root) |
-| Launch command | `LabGym` | `LabGym_LabGrYMace` |
-| Use it for | general LabGym work, newest features | producing the tracking output LabGrYMace reads |
+| Launch command | `LabGym` | `LabGym_LabGrymace` |
+| Use it for | general LabGym work, newest features | producing the tracking output LabGrymace reads |
 
-Because they now have **different package names and different commands, both can be
-installed in the same environment at once** — no uninstalling, no switching:
-
-```bash
-pip install LabGym
-pip install ./LabGym
-```
-
-The first installs upstream LabGym (launch with `LabGym`); the second installs this build
-(launch with `LabGym_LabGrYMace`).
-
-**How to run each one** (this is how you "activate" the LabGrYMace build):
+Because the package names and commands differ, **both can be installed in the same
+environment at once** — nothing to uninstall, nothing to switch. Run `LabGym` for
+upstream, `LabGym_LabGrymace` for this build. To check what you have:
 
 ```bash
-LabGym
-LabGym_LabGrYMace
+pip show LabGym LabGym_LabGrymace
 ```
 
-`LabGym` opens upstream LabGym 3.0.1; `LabGym_LabGrYMace` opens the 2.9.0 build that
-LabGrYMace needs.
-
-**Check what is installed:**
-
-```bash
-pip show LabGym LabGym_LabGrYMace
-python -c "import LabGym_LabGrYMace; print(LabGym_LabGrYMace.__version__)"
-```
-
-The last line prints `2.9.0`.
-
-> **The 2.9.0 build is required for LabGrYMace — it is not an optional preference.**
-> LabGrYMace reads output fields and a categorizer format (`*.keras`) that this build
-> writes and upstream LabGym does not. Running LabGrYMace against output from upstream
-> LabGym (3.0.1) will not work. Always generate LabGrYMace's input with
-> `LabGym_LabGrYMace`.
-
-Activate whichever environment you need; nothing to uninstall.
+> **The 2.9.0 build is required for LabGrymace — not an optional preference.** LabGrymace
+> reads output fields and a categorizer format (`*.keras`) that only this build writes, so
+> always generate its input with `LabGym_LabGrymace`.
 
 ---
 
@@ -118,18 +92,10 @@ TensorFlow runs on CPU. *(`tools.py`)*
 
 ## Vendored dependency
 
-`LabGym/LabGym_LabGrYMace/detectron2/` is the detectron2 tree that upstream LabGym v2.9.1
+`LabGym/LabGym_LabGrymace/detectron2/` is the detectron2 tree that upstream LabGym v2.9.1
 vendors, including its pre-built Windows C extensions (`_C.cp39-win_amd64.pyd`,
 `_C.cp310-win_amd64.pyd`). It is required — `detector.py` imports it — and is not our
-code. The only change from the upstream copy is the import namespace: references were
-rewritten from `LabGym.detectron2` to `LabGym_LabGrYMace.detectron2` when the package was
-renamed (see [Two LabGyms, side by side](#two-labgyms-side-by-side)); the logic is
-untouched. detectron2 is Apache-2.0 licensed (Meta Platforms, Inc.).
-
-## Package name
-
-This build installs as `LabGym_LabGrYMace` rather than `LabGym`, and its launch command is
-`LabGym_LabGrYMace`. The rename is what lets it sit alongside the upstream `LabGym` package
-in one environment. The import namespace changed to match (`import LabGym_LabGrYMace`);
-model and detector folders are unaffected, since they are located relative to the package,
-not by name.
+code. The only change from the upstream copy is the import namespace, rewritten from
+`LabGym.detectron2` to `LabGym_LabGrymace.detectron2` so this build can sit alongside the
+upstream `LabGym` package; the logic is untouched. detectron2 is Apache-2.0 licensed
+(Meta Platforms, Inc.).

@@ -9,7 +9,7 @@ main README automatically (no other edit needed):
 | `output-painscore.png`       | `pain_scores.xlsx` or `pain_score_chart.png` — the per-recording pain score |
 | `output-overlay-highcno.gif` | A few seconds of an overlay video for a mouse in pain (high score) |
 | `output-overlay-baseline.gif`| A few seconds of an overlay video for a baseline mouse (low score) |
-| `gui.png`                    | The LabGrYMace main window |
+| `gui.png`                    | The LabGrymace main window |
 
 Keep each file under ~5 MB so the repository stays quick to clone.
 GIFs: 5-10 s, <= 640 px wide is plenty.

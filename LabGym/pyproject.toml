@@ -3,8 +3,8 @@ requires=['pdm-backend']
 build-backend='pdm.backend'
 
 [project]
-name='LabGym_LabGrYMace'
-description='LabGym 2.9.0 modified for LabGrYMace (installs alongside upstream LabGym).'
+name='LabGym_LabGrymace'
+description='LabGym 2.9.0 modified for LabGrymace (installs alongside upstream LabGym).'
 authors=[
     {name='Yujia Hu',email='yujiahu415@gmail.com'},
     {name='Rohan Satapathy',email='rohansat@umich.edu'},
@@ -68,22 +68,22 @@ classifiers=[
 dynamic=['version']
 
 [project.urls]
-Homepage='https://github.com/devindwj0304/LabGym-LabGrYMace'
-Documentation='https://github.com/devindwj0304/LabGym-LabGrYMace/blob/main/README.md'
-Issues='https://github.com/devindwj0304/LabGym-LabGrYMace/issues'
+Homepage='https://github.com/devindwj0304/LabGym-LabGrymace'
+Documentation='https://github.com/devindwj0304/LabGym-LabGrymace/blob/main/README.md'
+Issues='https://github.com/devindwj0304/LabGym-LabGrymace/issues'
 
 [project.scripts]
-LabGym_LabGrYMace='LabGym_LabGrYMace.__main__:main'
+LabGym_LabGrymace='LabGym_LabGrymace.__main__:main'
 
 [tool.pdm]
 distribution=true
 
 [tool.pdm.build]
-includes=['LabGym_LabGrYMace/']
+includes=['LabGym_LabGrymace/']
 
 [tool.pdm.version]
 source='file'
-path='LabGym_LabGrYMace/__init__.py'
+path='LabGym_LabGrymace/__init__.py'
 
 [tool.pdm.dev-dependencies]
 docs=[

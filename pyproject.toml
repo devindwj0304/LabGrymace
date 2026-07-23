@@ -3,7 +3,7 @@ requires = ['setuptools>=61']
 build-backend = 'setuptools.build_meta'
 
 [project]
-name = 'LabGrYMace'
+name = 'LabGrymace'
 version = '0.1.0'
 description = 'Mouse facial-expression analysis for pain quantification (a LabGym extension).'
 readme = 'README.md'
@@ -23,18 +23,18 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = 'https://github.com/devindwj0304/LabGym-LabGrYMace'
+Homepage = 'https://github.com/devindwj0304/LabGym-LabGrymace'
 
-# `LabGrYMace` becomes a terminal command that launches the GUI after install.
+# `LabGrymace` becomes a terminal command that launches the GUI after install.
 [project.scripts]
-LabGrYMace = 'LabGrYMace.gui_main:main_window'
+LabGrymace = 'LabGrymace.gui_main:main_window'
 
 [tool.setuptools]
-packages = ['LabGrYMace']
+packages = ['LabGrymace']
 include-package-data = true
 
 # Ship the bundled Figure 4 calibration workbooks: gui_main._load_calibration() reads them at import
 # to derive the weights / mean-std / anchors, so the wheel/sdist must contain them or the console
 # script fails to start.
 [tool.setuptools.package-data]
-LabGrYMace = ['calibration/*.xlsx']
+LabGrymace = ['calibration/*.xlsx']

@@ -1,4 +1,4 @@
-# Runtime dependencies for LabGrYMace.
+# Runtime dependencies for LabGrymace.
 # Prefer `pip install .` (which reads pyproject.toml); this file is for users who
 # want to install dependencies manually.
 wxPython
