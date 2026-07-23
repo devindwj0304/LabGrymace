@@ -166,6 +166,19 @@ print("overall pain score:", round(score, 2))
 - **[How LabGym_LabGrymace differs from upstream](docs/LABGYM_CHANGES.md)** — describes the modifications made to LabGym and identifies those that affect results.
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** — solutions to common installation and usage issues.
 
+### Repository layout
+
+| Path | Contents |
+|---|---|
+| [`LabGrymace/`](LabGrymace) | The pain-scoring application: GUI, pain-score algorithm, and bundled calibration workbooks. |
+| [`LabGym/`](LabGym) | The modified LabGym 2.9.0 build (`LabGym_LabGrymace`) that produces LabGrymace's input. |
+| [`docs/`](docs) | The two guides above, plus the images used on this page. |
+| [`pyproject.toml`](pyproject.toml) | Package metadata for LabGrymace and its `LabGrymace` console command. |
+| [`requirements.txt`](requirements.txt) | LabGrymace's runtime dependencies, for installing them by hand. |
+| [`MANIFEST.in`](MANIFEST.in) | Includes the calibration workbooks in the source distribution. |
+| [`.gitignore`](.gitignore) | Excludes caches, build output, and the ~2 GB model weights. |
+| [`LICENSE`](LICENSE) | The GPL-3.0 text this project is released under. |
+
 ---
 
 ## License
