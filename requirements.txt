@@ -1,6 +1,6 @@
-# Runtime dependencies for LabGrymace.
-# Prefer `pip install .` (which reads pyproject.toml); this file is for users who
-# want to install dependencies manually.
+# Runtime dependencies of the LabGrymace package only; the modified LabGym build
+# declares its own in LabGym/pyproject.toml. Prefer `pip install .`, which reads
+# pyproject.toml -- this file is for installing the dependencies by hand.
 wxPython
 pandas
 numpy
