@@ -1,1 +1,3 @@
+# The calibration workbooks are read at import time by gui_main._load_calibration(),
+# so they must be present in the source distribution, not just the wheel.
 recursive-include LabGrymace/calibration *.xlsx
