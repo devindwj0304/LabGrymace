@@ -33,7 +33,7 @@ An `.mp4` copy of the original recording with the continuously updated pain scor
 
 Below is an example comparing a mouse experiencing chemical-induced pain (high pain score) with a baseline mouse (low pain score):
 
-| High CNO — in pain | Baseline — no pain |
+| Pain | No pain |
 |:---:|:---:|
 | ![High-CNO overlay](docs/images/output-overlay-highcno.gif) | ![Baseline overlay](docs/images/output-overlay-baseline.gif) |
 
