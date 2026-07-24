@@ -14,28 +14,24 @@ This repository contains two parts:
 
 ## The outputs of LabGrymace:
 
-**1. Summary spreadsheets** — Three Excel files per recording (`ear_summary.xlsx`, `eye_summary.xlsx`, `nose_summary.xlsx`), each holding the frame-by-frame measurements for that facial region. In the `Summary` sheet the merged column that feeds the pain score is highlighted **yellow**; two traceability sheets (`PanelB_behavior`, `PanelC_painscore`) add the per-frame behavior labels and mark the frames dropped by the mirror-reflection filter in **orange**.
+**1. Summary spreadsheets** — Three Excel files (`ear_summary.xlsx`, `eye_summary.xlsx`, `nose_summary.xlsx`) containing frame-by-frame measurements for each facial region. Frames removed by the mirror-reflection filter are highlighted in **orange**, and the merged measurements used for pain-score calculation are highlighted in **yellow**.
 
-***`ear_summary.xlsx` opened in Excel — one row per frame. The yellow `Ear_merged_intensity(feeds pain score)` column on the right is the single value per frame that the pain score is built from.***
-
-![ear_summary.xlsx](docs/images/output-summary.png)
+![Summary spreadsheet](docs/images/output-summary.png)
 
 **2. Pain score analysis** 
 
 The analysis includes:
 - **`pain_scores.xlsx`** — one sheet per recording, one row per 100 s window (3000 frames at 30 fps), plus a `Summary` sheet giving each recording's overall score.
-- **`pain_score_chart.png`** — a single dot plot of the whole batch: **one point per recording**, with the baseline (0) and 1 mg/kg CNO (100) reference lines.
-- **`pain_scores_per_frame.xlsx`** — one sheet per recording, one row per frame. Each frame's score looks back 2 s (60 frames at 30 fps): every region's intensity is averaged over that window with the top 10% of values trimmed, then Z-scored and combined. The first 59 frames are therefore blank, and every intermediate value is kept in the row so a score can be retraced.
+- **`pain_scores_per_frame.xlsx`** — one row per frame. Each frame's score looks back 2 s (60 frames at 30 fps): every region's intensity is averaged over that window with the top 10% of values trimmed, then Z-scored and combined. The first 59 frames are therefore blank.
+- **`pain_score_chart.png`** — a dot plot of the batch, one point per recording.
 
-***`pain_scores_per_frame.xlsx` — one row per frame. `win_start_frame` / `win_end_frame` show the 2 s look-back window, `ear_2s_mean` / `eye_2s_mean` / `nose_2s_mean` the trimmed means over it, and the yellow `pain_score` column the resulting 0-100 score.***
-
-![pain_scores_per_frame.xlsx](docs/images/output-painscore.png)
+![Pain score](docs/images/output-painscore.png)
 
 **3. Annotated video**
 
 An `.mp4` copy of the original recording with the continuously updated pain score overlaid on each frame, allowing direct comparison between the quantified pain score and the animal's behavior.
 
-***The same overlay for a mouse under high-dose CNO (left, high pain score) and an uninjected baseline mouse (right, lower pain score). The running score is drawn on every frame; both panels are shown at the same size.***
+Below is an example comparing a mouse experiencing chemical-induced pain (high pain score) with a baseline mouse (low pain score):
 
 | High CNO — in pain | Baseline — no pain |
 |:---:|:---:|
@@ -132,16 +128,14 @@ python -m LabGym_LabGrymace
 > **The two applications run independently.** `LabGrymace` opens immediately. 
 > **`LabGym_LabGrymace` typically takes 10–30 seconds to start** the first time because it loads TensorFlow and Detectron2 before the GUI appears.
 
-***The LabGrymace main window: step 1 generates the summary files, step 2 computes the pain scores.***
-
-![LabGrymace main window](docs/images/gui.png)
+![LabGrymace GUI](docs/images/gui.png)
 
 The **`LabGrymace`** workflow consists of two steps:
 
 1. **Generate summary files** — Select the folder containing the LabGym output. LabGrymace generates `ear_summary.xlsx`, `eye_summary.xlsx`, and `nose_summary.xlsx` files for each recording.
-2. **Compute pain scores** — Select the folders containing the summary files. LabGrymace generates `pain_scores.xlsx`, `pain_scores_per_frame.xlsx`, `pain_score_chart.png`, and, optionally, an annotated video with the pain score overlaid on each frame.
+2. **Compute pain scores** — Select the folders containing the summary files. LabGrymace generates `pain_scores.xlsx`, `pain_scores_per_frame.xlsx`, `pain_score_chart.png`, and (optionally) an annotated video with pain score overlaid on each frame.
 
-The reflection filter is **disabled by default** and can be enabled with a checkbox during step 2. The pain scores reported in the manuscript were computed with it **on**; the feature-selection analyses deliberately used **unfiltered** data. The reproduction scripts set it explicitly either way.
+The reflection filter is **disabled by default** and can be enabled with a checkbox during step 2. The figures in the accompanying manuscript were generated with this filter enabled, and the reproduction scripts set it automatically.
 
 ## Advanced usage
 
@@ -170,19 +164,6 @@ print("overall pain score:", round(score, 2))
 
 - **[How LabGym_LabGrymace differs from upstream](docs/LABGYM_CHANGES.md)** — describes the modifications made to LabGym and identifies those that affect results.
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** — solutions to common installation and usage issues.
-
-### Repository layout
-
-| Path | Contents |
-|---|---|
-| [`LabGrymace/`](LabGrymace) | The pain-scoring application: GUI, pain-score algorithm, and bundled calibration workbooks. |
-| [`LabGym/`](LabGym) | The modified LabGym 2.9.0 build (`LabGym_LabGrymace`) that produces LabGrymace's input. |
-| [`docs/`](docs) | The two guides above, plus the images used on this page. |
-| [`pyproject.toml`](pyproject.toml) | Package metadata for LabGrymace and its `LabGrymace` console command. |
-| [`requirements.txt`](requirements.txt) | LabGrymace's runtime dependencies, for installing them by hand. |
-| [`MANIFEST.in`](MANIFEST.in) | Includes the calibration workbooks in the source distribution. |
-| [`.gitignore`](.gitignore) | Excludes caches, build output, and the ~2 GB model weights. |
-| [`LICENSE`](LICENSE) | The GPL-3.0 text this project is released under. |
 
 ---
 
