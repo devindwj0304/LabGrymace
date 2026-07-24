@@ -16,7 +16,9 @@ This repository contains two parts:
 
 **1. Summary spreadsheets** — Three Excel files per recording (`ear_summary.xlsx`, `eye_summary.xlsx`, `nose_summary.xlsx`), each holding the frame-by-frame measurements for that facial region. In the `Summary` sheet the merged column that feeds the pain score is highlighted **yellow**; two traceability sheets (`PanelB_behavior`, `PanelC_painscore`) add the per-frame behavior labels and mark the frames dropped by the mirror-reflection filter in **orange**.
 
-![Summary spreadsheet](docs/images/output-summary.png)
+***`ear_summary.xlsx` opened in Excel — one row per frame. The yellow `Ear_merged_intensity(feeds pain score)` column on the right is the single value per frame that the pain score is built from.***
+
+![ear_summary.xlsx](docs/images/output-summary.png)
 
 **2. Pain score analysis** 
 
@@ -24,13 +26,15 @@ The analysis includes:
 - **`pain_scores.xlsx`** — one sheet per recording, one row per 100 s window (3000 frames at 30 fps), plus a `Summary` sheet giving each recording's overall score.
 - **`pain_scores_per_frame.xlsx`** — one sheet per recording, one row per frame. Each frame's score looks back 2 s (60 frames at 30 fps): every region's intensity is averaged over that window with the top 10% of values trimmed, then Z-scored and combined. The first 59 frames are therefore blank, and every intermediate value is kept in the row so a score can be retraced.
 
-![Pain score](docs/images/output-painscore.png)
+***`pain_scores_per_frame.xlsx` — one row per frame. `win_start_frame` / `win_end_frame` show the 2 s look-back window, `ear_2s_mean` / `eye_2s_mean` / `nose_2s_mean` the trimmed means over it, and the yellow `pain_score` column the resulting 0-100 score.***
+
+![pain_scores_per_frame.xlsx](docs/images/output-painscore.png)
 
 **3. Annotated video**
 
 An `.mp4` copy of the original recording with the continuously updated pain score overlaid on each frame, allowing direct comparison between the quantified pain score and the animal's behavior.
 
-Below is an example comparing a mouse experiencing chemical-induced pain (high pain score) with a baseline mouse (low pain score):
+***The same overlay for a mouse under high-dose CNO (left, high pain score) and a baseline mouse (right, low pain score). The running score is drawn on every frame.***
 
 | High CNO — in pain | Baseline — no pain |
 |:---:|:---:|
@@ -127,7 +131,9 @@ python -m LabGym_LabGrymace
 > **The two applications run independently.** `LabGrymace` opens immediately. 
 > **`LabGym_LabGrymace` typically takes 10–30 seconds to start** the first time because it loads TensorFlow and Detectron2 before the GUI appears.
 
-![LabGrymace GUI](docs/images/gui.png)
+***The LabGrymace main window: step 1 generates the summary files, step 2 computes the pain scores.***
+
+![LabGrymace main window](docs/images/gui.png)
 
 The **`LabGrymace`** workflow consists of two steps:
 
