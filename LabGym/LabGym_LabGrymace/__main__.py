@@ -16,6 +16,12 @@ USA
 Email: bingye@umich.edu
 '''
 
+# !New Update from Wenjin -- this file differs from upstream LabGym 2.9.1:
+# Removed the startup PyPI version check. It contacted pypi.org on every launch,
+# which stalls behind a restricted network, and it told users to upgrade to a
+# release that LabGrymace cannot read.
+# Every change is marked with the same tag below.
+
 # Configure the logging system.
 # Log the load of this module (by the module loader, on first import).
 #
@@ -38,10 +44,12 @@ logger = logging.getLogger(__name__)
 logger.debug('%s: %r', '__name__', __name__)
 
 
+# !New Update from Wenjin
 # Local application/library specific imports.
 from LabGym_LabGrymace import gui_main
 
 
+# !New Update from Wenjin
 def main():
 
 	gui_main.main_window()

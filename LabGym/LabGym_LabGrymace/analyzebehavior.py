@@ -16,6 +16,13 @@ USA
 Email: bingye@umich.edu
 '''
 
+# !New Update from Wenjin -- this file differs from upstream LabGym 2.9.1:
+# Low-confidence frames are always assigned their most likely behavior when
+# uncertain==0 (upstream leaves them as NA), categorizer inference is pinned to CPU
+# to avoid CUDA context conflicts with detectron2, frames with a zero mask no
+# longer contribute a nan to area_diffs, and out-of-bounds writes are guarded.
+# Every change is marked with the same tag below.
+
 # Log the load of this module (by the module loader, on first import).
 # Intentionally positioning these statements before other imports, against the
 # guidance of PEP-8, to log the load before other imports log messages.
@@ -35,18 +42,21 @@ import datetime
 import numpy as np
 import math
 from scipy.spatial import distance
+# !New Update from Wenjin
 from collections import deque,Counter
 import tensorflow as tf
-
+# !New Update from Wenjin
 class _SavedModelWrapper:
 	"""Keras 3-compatible wrapper for TF SavedModel format directories.
 	- Patches AutoTrackable.add_slot to handle optimizer state from older TF versions.
 	- Loads and runs inference on CPU to avoid CUDA_ERROR_INVALID_HANDLE conflicts
 	  when PyTorch/detectron2 already owns the CUDA context."""
+	# !New Update from Wenjin
 	def __init__(self, path):
 		from tensorflow.python.trackable import autotrackable
 		had_add_slot = hasattr(autotrackable.AutoTrackable, 'add_slot')
 		if not had_add_slot:
+			# !New Update from Wenjin
 			def _dummy_add_slot(self, *args, **kwargs):
 				var = args[0] if args else kwargs.get('variable', kwargs.get('var', None))
 				if var is not None:
@@ -66,6 +76,7 @@ class _SavedModelWrapper:
 			if not had_add_slot and hasattr(autotrackable.AutoTrackable, 'add_slot'):
 				del autotrackable.AutoTrackable.add_slot
 
+	# !New Update from Wenjin
 	def predict(self, inputs, batch_size=32, verbose=0):
 		import numpy as np
 		is_list = isinstance(inputs, (list, tuple))
@@ -81,12 +92,15 @@ class _SavedModelWrapper:
 			results.append(out[self._out_keys[0]].numpy())
 		return np.concatenate(results, axis=0)
 
+# !New Update from Wenjin
 class _KerasModelWrapper:
 	"""Wraps a standard Keras model to run predict() on CPU, avoiding CUDA
 	context conflicts with PyTorch/detectron2."""
+	# !New Update from Wenjin
 	def __init__(self, model):
 		self._model = model
 
+	# !New Update from Wenjin
 	def predict(self, inputs, batch_size=32, verbose=0):
 		import numpy as np
 		is_list = isinstance(inputs, (list, tuple))
@@ -99,6 +113,7 @@ class _KerasModelWrapper:
 			results.append(out.numpy())
 		return np.concatenate(results, axis=0)
 
+# !New Update from Wenjin
 def _load_model(path):
 	"""Load a Keras model from either a SavedModel directory or .keras/.h5 file.
 	Always returns a CPU-pinned wrapper to avoid CUDA conflicts with PyTorch."""
@@ -297,6 +312,7 @@ class AnalyzeAnimal():
 		self.log.append('Preparation completed!')
 
 
+	# !New Update from Wenjin
 	def track_animal(self,frame_count_analyze,contours,centers,heights,inners=None):
 
 		# frame_count_analyze: the analyzed frame count
@@ -610,6 +626,7 @@ class AnalyzeAnimal():
 		self.log.append('Data crafting completed!')
 
 
+	# !New Update from Wenjin
 	def categorize_behaviors(self,path_to_categorizer,uncertain=0,min_length=None):
 
 		# path_to_categorizer: path to the Categorizer
@@ -718,6 +735,7 @@ class AnalyzeAnimal():
 		self.log.append('Behavioral categorization completed!')
 
 
+	# !New Update from Wenjin
 	def annotate_video(self,ID_colors,behavior_to_include,show_legend=True,interact_all=False):
 
 		# ID_colors: the colors for animal / objects identities
@@ -874,6 +892,7 @@ class AnalyzeAnimal():
 		self.log.append('Video annotation completed!')
 
 
+	# !New Update from Wenjin
 	def analyze_parameters(self,normalize_distance=True,parameter_to_analyze=[]):
 
 		# normalize_distance: whether to normalize the distance (in pixel) to the animal contour area
@@ -1178,6 +1197,7 @@ class AnalyzeAnimal():
 								self.all_behavior_parameters[behavior_name]['distance'][i]='NA'
 
 
+	# !New Update from Wenjin
 	def export_results(self,normalize_distance=True,parameter_to_analyze=[]):
 
 		# normalize_distance: whether to normalize the distance (in pixel) to the animal contour area
@@ -1269,6 +1289,7 @@ class AnalyzeAnimal():
 				analysis_log.write('\n'.join(str(i) for i in self.log))
 
 
+	# !New Update from Wenjin
 	def generate_data(self,background_free=True,black_background=True,skip_redundant=1):
 
 		# background_free: whether to include background in animations
@@ -1378,6 +1399,7 @@ class AnalyzeAnimal():
 		print('Behavior example generation completed!')
 
 
+	# !New Update from Wenjin
 	def generate_data_interact_basic(self,background_free=True,black_background=True,skip_redundant=1):
 
 		# background_free: whether to include background in animations

@@ -16,6 +16,13 @@ USA
 Email: bingye@umich.edu
 '''
 
+# !New Update from Wenjin -- this file differs from upstream LabGym 2.9.1:
+# Rejects categorizers trained in an unsupported behavior mode (mode 4) with a
+# clear dialog instead of failing later, and passes specific_behaviors through to
+# the detector-based analyzer so each animal can be scored against its own set of
+# allowed behaviors.
+# Every change is marked with the same tag below.
+
 # Log the load of this module (by the module loader, on first import).
 # Intentionally positioning these statements before other imports, against the
 # guidance of PEP-8, to log the load before other imports log messages.
@@ -242,6 +249,7 @@ class WindowLv2_AnalyzeBehaviors(wx.Frame):
 		self.Show(True)
 
 
+	# !New Update from Wenjin
 	def select_categorizer(self,event):
 
 		if self.model_path is None:
@@ -467,6 +475,7 @@ class WindowLv2_AnalyzeBehaviors(wx.Frame):
 		dialog.Destroy()
 
 
+	# !New Update from Wenjin
 	def select_method(self,event):
 
 		if self.behavior_mode<=1:
@@ -649,6 +658,7 @@ class WindowLv2_AnalyzeBehaviors(wx.Frame):
 		dialog.Destroy()
 
 
+	# !New Update from Wenjin
 	def specify_timing(self,event):
 
 		if self.behavior_mode==3:
@@ -694,6 +704,7 @@ class WindowLv2_AnalyzeBehaviors(wx.Frame):
 			dialog.Destroy()
 
 
+	# !New Update from Wenjin
 	def input_duration(self,event):
 
 		if self.behavior_mode==3:
@@ -712,6 +723,7 @@ class WindowLv2_AnalyzeBehaviors(wx.Frame):
 			dialog.Destroy()
 
 
+	# !New Update from Wenjin
 	def specify_animalnumber(self,event):
 
 		if self.behavior_mode==3:
@@ -882,6 +894,7 @@ class WindowLv2_AnalyzeBehaviors(wx.Frame):
 				dialog.Destroy()
 
 
+	# !New Update from Wenjin
 	def select_parameters(self,event):
 
 		if self.behavior_mode==3:
@@ -924,6 +937,7 @@ class WindowLv2_AnalyzeBehaviors(wx.Frame):
 					self.text_selectparameters.SetLabel('Selected: '+str(self.parameter_to_analyze)+'.')
 
 
+	# !New Update from Wenjin
 	def analyze_behaviors(self,event):
 
 		if self.path_to_videos is None or self.result_path is None:

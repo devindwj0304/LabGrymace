@@ -16,6 +16,14 @@ USA
 Email: bingye@umich.edu
 '''
 
+# !New Update from Wenjin -- this file differs from upstream LabGym 2.9.1:
+# Configures TensorFlow and PyTorch GPU memory BEFORE any submodule is imported,
+# so the two frameworks can share one GPU instead of the first one claiming all of
+# it (TF memory growth + PYTORCH_CUDA_ALLOC_CONF). Without this the analysis runs
+# out of GPU memory. Version is pinned to 2.9.0.
+# Every change is marked with the same tag below.
+
+# !New Update from Wenjin
 # CRITICAL: Configure GPU settings BEFORE any module imports
 # This must be done at package initialization to prevent OOM errors
 import os
@@ -56,4 +64,5 @@ except Exception as e:
 __version__='2.9.0'
 
 
+# !New Update from Wenjin
 

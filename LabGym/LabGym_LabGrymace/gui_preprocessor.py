@@ -16,6 +16,12 @@ USA
 Email: bingye@umich.edu
 '''
 
+# !New Update from Wenjin -- this file differs from upstream LabGym 2.9.1:
+# Adds automatic video-decode recovery: videos OpenCV cannot read (e.g. AV1) are
+# detected and transcoded once to H.264 with standalone ffmpeg, with a progress
+# dialog, instead of failing silently on an unreadable file.
+# Every change is marked with the same tag below.
+
 # Log the load of this module (by the module loader, on first import).
 # Intentionally positioning these statements before other imports, against the
 # guidance of PEP-8, to log the load before other imports log messages.
@@ -28,15 +34,14 @@ logger.debug('loading %s', __file__)
 from .tools import preprocess_video
 import wx
 import os
+# !New Update from Wenjin
 import sys
 import shutil
 import subprocess
 import tempfile
 import cv2
 import numpy as np
-
-
-
+# !New Update from Wenjin
 def find_ffmpeg():
 
 	# Locate a working standalone ffmpeg binary. OpenCV's bundled FFmpeg cannot decode some codecs (e.g. AV1),
@@ -55,6 +60,7 @@ def find_ffmpeg():
 	return ffmpeg_bin
 
 
+# !New Update from Wenjin
 def is_readable_video(path):
 
 	# Return True if OpenCV can actually decode the first frame of the video.
@@ -67,6 +73,7 @@ def is_readable_video(path):
 	return readable
 
 
+# !New Update from Wenjin
 def ensure_readable_videos(parent,paths):
 
 	# Make sure every selected video can be decoded by OpenCV. Videos that cannot (e.g. AV1-encoded) are
@@ -147,6 +154,7 @@ class WindowLv2_ProcessVideos(wx.Frame):
 	The 'Preprocess Videos' functional unit
 	'''
 
+	# !New Update from Wenjin
 	def __init__(self,title):
 
 		super(WindowLv2_ProcessVideos,self).__init__(parent=None,title=title,size=(1000,400))
@@ -168,6 +176,7 @@ class WindowLv2_ProcessVideos(wx.Frame):
 		self.display_window()
 
 
+	# !New Update from Wenjin
 	def display_window(self):
 
 		panel=wx.Panel(self)
@@ -247,6 +256,7 @@ class WindowLv2_ProcessVideos(wx.Frame):
 		self.Show(True)
 
 
+	# !New Update from Wenjin
 	def select_videos(self,event):
 
 		wildcard='Video files(*.avi;*.mpg;*.mpeg;*.wmv;*.mp4;*.mkv;*.m4v;*.mov;*.mts)|*.avi;*.mpg;*.mpeg;*.wmv;*.mp4;*.mkv;*.m4v;*.mov;*.mts'
@@ -391,6 +401,7 @@ class WindowLv2_ProcessVideos(wx.Frame):
 			cv2.destroyAllWindows()
 			
 
+	# !New Update from Wenjin
 	def enhance_contrasts(self,event):
 
 		if self.path_to_videos is None:
@@ -459,6 +470,7 @@ class WindowLv2_ProcessVideos(wx.Frame):
 		dialog.Destroy()
 
 
+	# !New Update from Wenjin
 	def preprocess_videos(self,event):
 
 		if self.path_to_videos is None or self.result_path is None:
@@ -557,6 +569,7 @@ class WindowLv2_DrawMarkers(wx.Frame):
 		self.Show(True)
 
 
+	# !New Update from Wenjin
 	def select_videos(self,event):
 
 		wildcard='Video files(*.avi;*.mpg;*.mpeg;*.wmv;*.mp4;*.mkv;*.m4v;*.mov;*.mts)|*.avi;*.mpg;*.mpeg;*.wmv;*.mp4;*.mkv;*.m4v;*.mov;*.mts'

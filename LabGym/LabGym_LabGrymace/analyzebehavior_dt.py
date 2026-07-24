@@ -16,8 +16,16 @@ USA
 Email: bingye@umich.edu
 '''
 
+# !New Update from Wenjin -- this file differs from upstream LabGym 2.9.1:
+# Adds individual-specific behavior filtering: each animal can be scored against
+# its own set of allowed behaviors, and a prediction belonging to a different
+# animal's repertoire is suppressed to NA. Also carries the same low-confidence,
+# zero-mask and bounds-guard changes as analyzebehavior.py.
+# Every change is marked with the same tag below.
 
 
+
+# !New Update from Wenjin
 
 # GPU configuration is now handled in __init__.py
 # No need to reconfigure here
@@ -32,9 +40,11 @@ import datetime
 import numpy as np
 import math
 from scipy.spatial import distance
+# !New Update from Wenjin
 from collections import deque,Counter
 import tensorflow as tf
 from tensorflow.keras.models import load_model
+# !New Update from Wenjin
 
 from tensorflow.keras.preprocessing.image import img_to_array
 import pandas as pd
@@ -47,6 +57,7 @@ import operator
 
 class AnalyzeAnimalDetector():
 
+	# !New Update from Wenjin
 	def __init__(self):
 
 		self.behavior_mode=0
@@ -97,6 +108,7 @@ class AnalyzeAnimalDetector():
 		self.log=[]
 		self.specific_behaviors = {}
 
+	# !New Update from Wenjin
 	def prepare_analysis(self,
 		path_to_detector, # path to the Detector
 		path_to_video, # path to the video for generating behavior examples or behavior analysis
@@ -259,6 +271,7 @@ class AnalyzeAnimalDetector():
 		self.log.append('Preparation completed!')
 
 
+	# !New Update from Wenjin
 	def track_animal(self,frame_count_analyze,animal_name,contours,centers,heights,inners=None):
 
 		# animal_name: the name of animals / objects that are included in the analysis
@@ -317,6 +330,7 @@ class AnalyzeAnimalDetector():
 					self.animal_inners[animal_name][i].append(None)
 
 
+	# !New Update from Wenjin
 	def track_animal_interact(self,frame_count_analyze,contours,other_contours,centers,heights,inners=None,other_inners=None,blobs=None):
 
 		# frame_count_analyze: the analyzed frame count
@@ -428,6 +442,7 @@ class AnalyzeAnimalDetector():
 				n+=self.animal_present[animal_name]
 
 
+	# !New Update from Wenjin
 	def detect_track_individuals(self,frames,batch_size,frame_count_analyze,background_free=True,black_background=True,animation=None):
 
 		# frames: frames that the Detector runs on
@@ -543,6 +558,7 @@ class AnalyzeAnimalDetector():
 									self.animations[animal_name][i][frame_count_analyze+1-batch_size+batch_count]=np.array(animation)
 
 
+	# !New Update from Wenjin
 	def detect_track_interact(self,frames,batch_size,frame_count_analyze,background_free=True,black_background=True):
 
 		# frames: frames that the Detector runs on
@@ -1048,6 +1064,7 @@ class AnalyzeAnimalDetector():
 		print('Data crafting completed!')
 		self.log.append('Data crafting completed!')
 
+	# !New Update from Wenjin
 	def categorize_behaviors(self, path_to_categorizer, uncertain=0, min_length=None):
 
 		# path_to_categorizer: path to the Categorizer
@@ -1310,6 +1327,7 @@ class AnalyzeAnimalDetector():
 		self.log.append('Identity correction completed!')
 
 
+	# !New Update from Wenjin
 	def annotate_video(self,animal_to_include,ID_colors,behavior_to_include,show_legend=True):
 
 		# animal_to_include: animals / objects that are included in the annotation
@@ -1525,6 +1543,7 @@ class AnalyzeAnimalDetector():
 		self.log.append('Video annotation completed!')
 
 
+	# !New Update from Wenjin
 	def analyze_parameters(self,normalize_distance=True,parameter_to_analyze=[]):
 
 		# normalize_distance: whether to normalize the distance (in pixel) to the animal contour area
@@ -1834,6 +1853,7 @@ class AnalyzeAnimalDetector():
 									self.all_behavior_parameters[animal_name][behavior_name]['distance'][i]='NA'
 
 
+	# !New Update from Wenjin
 	def export_results(self,normalize_distance=True,parameter_to_analyze=[]):
 
 		# normalize_distance: whether to normalize the distance (in pixel) to the animal contour area
@@ -1928,6 +1948,7 @@ class AnalyzeAnimalDetector():
 
 
 
+	# !New Update from Wenjin
 	def generate_data(self,background_free=True,black_background=True,skip_redundant=1):
 
 		# background_free: whether to include background in animations
@@ -2161,6 +2182,7 @@ class AnalyzeAnimalDetector():
 		print('Behavior example generation completed!')
 
 
+	# !New Update from Wenjin
 	def generate_data_interact_advance(self,background_free=True,black_background=True,skip_redundant=1):
 
 		# background_free: whether to include background in animations
@@ -2493,6 +2515,7 @@ class AnalyzeAnimalDetector():
 		print('Behavior example generation completed!')
 
 
+	# !New Update from Wenjin
 	def analyze_images_individuals(self,
 		path_to_detector, # path to the Detector
 		path_to_images, # path to the images to analyze

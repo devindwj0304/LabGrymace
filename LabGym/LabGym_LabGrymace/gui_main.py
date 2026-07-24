@@ -16,6 +16,11 @@ USA
 Email: bingye@umich.edu
 '''
 
+# !New Update from Wenjin -- this file differs from upstream LabGym 2.9.1:
+# Credits the grimace modifications and points Home Page / User Guide at this
+# repository instead of upstream.
+# Every change is marked with the same tag below.
+
 # Log the load of this module (by the module loader, on first import).
 # Intentionally positioning these statements before other imports, against the
 # guidance of PEP-8, to log the load before other imports log messages.
@@ -55,6 +60,7 @@ class InitialWindow(wx.Frame):
 		self.display_window()
 
 
+	# !New Update from Wenjin
 	def display_window(self):
 
 		panel=wx.Panel(self)

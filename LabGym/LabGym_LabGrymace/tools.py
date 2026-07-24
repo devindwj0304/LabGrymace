@@ -16,6 +16,13 @@ USA
 Email: bingye@umich.edu
 '''
 
+# !New Update from Wenjin -- this file differs from upstream LabGym 2.9.1:
+# Reads CUDA_HOME / CUDA_PATH from the environment instead of hardcoding one
+# cluster path, and leaves it unset when no toolkit is present so TensorFlow falls
+# back to CPU. Adds the per-frame pattern-image generator, and guards against None
+# frames, empty contour sets and zero-area contours that previously raised.
+# Every change is marked with the same tag below.
+
 # Log the load of this module (by the module loader, on first import).
 # Intentionally positioning these statements before other imports, against the
 # guidance of PEP-8, to log the load before other imports log messages.
@@ -30,6 +37,7 @@ import cv2
 import numpy as np
 import datetime
 from skimage import exposure
+# !New Update from Wenjin
 os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices=false'
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 # Point XLA at the local CUDA toolkit. Respect an existing CUDA_HOME/CUDA_PATH if the
@@ -46,6 +54,7 @@ if _cuda_home:
 	os.environ['CUDA_HOME'] = _cuda_home
 	os.environ['XLA_FLAGS'] = '--xla_gpu_cuda_data_dir=' + _cuda_home
 logger.debug('importing tensorflow.keras.preprocessing.image (starting...)')
+# !New Update from Wenjin
 import tensorflow as tf
 tf.config.optimizer.set_jit(False)
 from tensorflow.keras.preprocessing.image import img_to_array
@@ -54,6 +63,7 @@ from collections import deque
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap,Normalize
 from matplotlib.colorbar import ColorbarBase
+# !New Update from Wenjin
 import pandas as pd
 import seaborn as sb
 import functools
@@ -485,6 +495,7 @@ def estimate_constants(path_to_video,delta,animal_number,framewidth=None,framehe
 	return (background,background_low,background_high,stim_t,animal_area)
 
 
+# !New Update from Wenjin
 def crop_frame(frame,contours):
 
 	'''
@@ -607,6 +618,7 @@ def get_inner(masked_frame_gray,contour):
 	return inner
 
 
+# !New Update from Wenjin
 def contour_frame(frame,animal_number,background,background_low,background_high,delta,contour_area,animal_vs_bg=0,include_bodyparts=False,animation_analyzer=False,channel=1,kernel=5,black_background=True):
 
 	'''
@@ -687,6 +699,7 @@ def contour_frame(frame,animal_number,background,background_low,background_high,
 	return (contours,centers,heights,inners)
 
 
+# !New Update from Wenjin
 def generate_patternimage(frame,outlines,inners=None,std=0):
 
 	'''
@@ -763,6 +776,7 @@ def generate_patternimage(frame,outlines,inners=None,std=0):
 	return pattern_image
 
 
+# !New Update from Wenjin
 def generate_patternimage_perframe(frame,outlines):
 
 	'''
@@ -810,6 +824,7 @@ def generate_patternimage_perframe(frame,outlines):
 	return images
 
 
+# !New Update from Wenjin
 def generate_patternimage_interact_perframe(frame,outlines,other_outlines):
 
 	'''
@@ -865,6 +880,7 @@ def generate_patternimage_interact_perframe(frame,outlines,other_outlines):
 	return images
 
 
+# !New Update from Wenjin
 def generate_patternimage_all(frame,y_bt,y_tp,x_lf,x_rt,outlines_list,inners_list,std=0):
 
 	'''
@@ -952,6 +968,7 @@ def generate_patternimage_all(frame,y_bt,y_tp,x_lf,x_rt,outlines_list,inners_lis
 	return pattern_image
 
 
+# !New Update from Wenjin
 def generate_patternimage_interact(frame,outlines,other_outlines,inners=None,other_inners=None,std=0):
 
 	'''
@@ -1177,6 +1194,7 @@ def extract_frames(path_to_video,out_path,framewidth=None,start_t=0,duration=0,s
 	print('The image examples stored in: '+out_path)
 
 
+# !New Update from Wenjin
 def preprocess_video(
 	path_to_video,
 	out_folder,

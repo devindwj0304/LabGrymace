@@ -16,6 +16,14 @@ USA
 Email: bingye@umich.edu
 '''
 
+# !New Update from Wenjin -- this file differs from upstream LabGym 2.9.1:
+# Adds TensorFlow 2.17 / Keras 3 compatibility: legacy SavedModel directories load
+# through a wrapper that works around the add_slot error and pins inference to CPU
+# to avoid CUDA conflicts with detectron2. Trained models are written as
+# .keras files, diagnostic confusion matrices are exported alongside training and
+# testing, and train_combnet_onfly uses a batch size of 128.
+# Every change is marked with the same tag below.
+
 
 
 
@@ -28,20 +36,23 @@ import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 import random
+# !New Update from Wenjin
 from collections import deque,defaultdict,Counter
 from skimage import exposure,transform
 from skimage.transform import AffineTransform
 import scipy.ndimage as ndimage
+# !New Update from Wenjin
 os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices=false'
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 import tensorflow as tf
+# !New Update from Wenjin
 tf.config.optimizer.set_jit(False)
 from tensorflow.keras.preprocessing.image import img_to_array,load_img
 from tensorflow.keras.layers import Input,TimeDistributed,BatchNormalization,MaxPooling2D,Activation,ZeroPadding2D,Add
 from tensorflow.keras.layers import Conv2D,Dropout,Flatten,Dense,LSTM,concatenate,AveragePooling2D,GlobalMaxPooling2D
 from tensorflow.keras.models import Model,Sequential,load_model
 from tensorflow.keras.optimizers import SGD
-
+# !New Update from Wenjin
 def _load_model(path):
 	"""Load a Keras model from either a SavedModel directory or .keras/.h5 file.
 	Handles the add_slot AttributeError from old-format optimizer state (TF 2.17),
@@ -51,6 +62,7 @@ def _load_model(path):
 		from tensorflow.python.trackable import autotrackable
 		had_add_slot = hasattr(autotrackable.AutoTrackable, 'add_slot')
 		if not had_add_slot:
+			# !New Update from Wenjin
 			def _dummy_add_slot(self, *args, **kwargs):
 				var = args[0] if args else kwargs.get('variable', kwargs.get('var', None))
 				if var is not None:
@@ -69,7 +81,9 @@ def _load_model(path):
 		finally:
 			if not had_add_slot and hasattr(autotrackable.AutoTrackable, 'add_slot'):
 				del autotrackable.AutoTrackable.add_slot
+		# !New Update from Wenjin
 		class _Wrapper:
+			# !New Update from Wenjin
 			def predict(self_inner, inputs, batch_size=32, verbose=0):
 				import numpy as np
 				is_list = isinstance(inputs, (list, tuple))
@@ -86,8 +100,11 @@ def _load_model(path):
 				return np.concatenate(results, axis=0)
 		return _Wrapper()
 	model = load_model(path)
+	# !New Update from Wenjin
 	class _CPUWrapper:
+		# !New Update from Wenjin
 		def __init__(self_inner, m): self_inner._m = m
+		# !New Update from Wenjin
 		def predict(self_inner, inputs, batch_size=32, verbose=0):
 			import numpy as np
 			is_list = isinstance(inputs, (list, tuple))
@@ -163,6 +180,7 @@ class DatasetFromPath_AA(Sequence):
 		return int(np.floor(len(self.pattern_image_paths)/self.batch_size))
 
 
+	# !New Update from Wenjin
 	def __getitem__(self,idx):
 
 		batch=self.pattern_image_paths[idx*self.batch_size:(idx+1)*self.batch_size]
@@ -1036,6 +1054,7 @@ class Categorizers():
 		return model
 
 
+	# !New Update from Wenjin
 	def train_pattern_recognizer(self,data_path,model_path,out_path=None,dim=64,channel=3,time_step=15,level=2,aug_methods=[],augvalid=True,include_bodyparts=True,std=0,background_free=True,black_background=True,behavior_mode=0,social_distance=0,out_folder=None):
 
 		# data_path: the folder that stores all the prepared training examples
@@ -1239,6 +1258,7 @@ class Categorizers():
 				self.train_pattern_recognizer_onfly(out_folder,model_path,out_path=out_path,dim=dim,channel=channel,time_step=time_step,level=level,include_bodyparts=include_bodyparts,std=std,background_free=background_free,black_background=black_background,behavior_mode=behavior_mode,social_distance=social_distance)
 
 
+	# !New Update from Wenjin
 	def train_animation_analyzer(self,data_path,model_path,out_path=None,dim=64,channel=1,time_step=15,level=2,aug_methods=[],augvalid=True,include_bodyparts=True,std=0,background_free=True,black_background=True,behavior_mode=0,social_distance=0,out_folder=None):
 
 		# data_path: the folder that stores all the prepared training examples
@@ -1452,6 +1472,7 @@ class Categorizers():
 				self.train_animation_analyzer_onfly(out_folder,model_path,out_path=out_path,dim=dim,channel=channel,time_step=time_step,level=level,include_bodyparts=include_bodyparts,std=std,background_free=background_free,black_background=black_background,behavior_mode=behavior_mode,social_distance=social_distance)
 
 
+	# !New Update from Wenjin
 	def train_combnet(self,data_path,model_path,out_path=None,dim_tconv=32,dim_conv=64,channel=1,time_step=15,level_tconv=1,level_conv=2,aug_methods=[],augvalid=True,include_bodyparts=True,std=0,background_free=True,black_background=True,behavior_mode=0,social_distance=0,out_folder=None):
 
 		# data_path: the folder that stores all the prepared training examples
@@ -1658,6 +1679,7 @@ class Categorizers():
 				self.train_combnet_onfly(out_folder,model_path,out_path=out_path,dim_tconv=dim_tconv,dim_conv=dim_conv,channel=channel,time_step=time_step,level_tconv=level_tconv,level_conv=level_conv,include_bodyparts=include_bodyparts,std=std,background_free=background_free,black_background=black_background,behavior_mode=behavior_mode,social_distance=social_distance)
 
 
+	# !New Update from Wenjin
 	def train_pattern_recognizer_onfly(self,data_path,model_path,out_path=None,dim=32,channel=3,time_step=15,level=2,include_bodyparts=True,std=0,background_free=True,black_background=True,behavior_mode=0,social_distance=0):
 
 		# data_path: the folder that stores all the prepared training examples
@@ -1776,6 +1798,7 @@ class Categorizers():
 			print('No train / validation folder!')
 
 
+	# !New Update from Wenjin
 	def train_animation_analyzer_onfly(self,data_path,model_path,out_path=None,dim=32,channel=1,time_step=15,level=2,include_bodyparts=True,std=0,background_free=True,black_background=True,behavior_mode=0,social_distance=0):
 
 		# data_path: the folder that stores all the prepared training examples
@@ -1887,6 +1910,7 @@ class Categorizers():
 			print('No train / validation folder!')
 
 
+	# !New Update from Wenjin
 	def train_combnet_onfly(self,data_path,model_path,out_path=None,dim_tconv=32,dim_conv=64,channel=1,time_step=15,level_tconv=1,level_conv=2,include_bodyparts=True,std=0,background_free=True,black_background=True,behavior_mode=0,social_distance=0):
 
 		# data_path: the folder that stores all the prepared training examples
@@ -1989,6 +2013,7 @@ class Categorizers():
 			print('No train / validation folder!')
 
 
+	# !New Update from Wenjin
 	def test_categorizer(self,groundtruth_path,model_path,result_path=None):
 
 		# groundtruth_path: the folder that stores all the groundtruth behavior examples, each subfolder should be a behavior category, all categories must match those in the Categorizer
@@ -2141,6 +2166,7 @@ class Categorizers():
 			print('Testing completed!')
 
 
+	# !New Update from Wenjin
 	def _plot_diagnostic_confusion_matrix(self,true_labels,pred_labels,classnames,report,result_path):
 		# Build and save a 'Diagnostic Confusion Matrix' heatmap. Every cell shows the
 		# raw count; each diagonal cell additionally shows that class's F1 score, so the

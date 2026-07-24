@@ -16,6 +16,11 @@ USA
 Email: bingye@umich.edu
 '''
 
+# !New Update from Wenjin -- this file differs from upstream LabGym 2.9.1:
+# Adds the optional per-frame ROI export: every frame of an animation can also be
+# written as its own image, so what the model sees at each timestep is inspectable.
+# Every change is marked with the same tag below.
+
 # Log the load of this module (by the module loader, on first import).
 # Intentionally positioning these statements before other imports, against the
 # guidance of PEP-8, to log the load before other imports log messages.
@@ -565,6 +570,7 @@ class WindowLv2_GenerateExamples(wx.Frame):
 			dialog.Destroy()
 
 
+	# !New Update from Wenjin
 	def generate_data(self,event):
 
 		if self.path_to_videos is None or self.result_path is None:
@@ -1340,6 +1346,7 @@ class WindowLv2_TrainCategorizers(wx.Frame):
 			self.text_categorizershape.SetLabel('Input shapes: Animation Analyzer'+shape_tconv+'; Pattern Recognizer'+shape_conv+'.')
 
 
+	# !New Update from Wenjin
 	def input_timesteps(self,event):
 
 		if self.behavior_mode==3:
@@ -1357,6 +1364,7 @@ class WindowLv2_TrainCategorizers(wx.Frame):
 			dialog.Destroy()
 
 
+	# !New Update from Wenjin
 	def select_datapath(self,event):
 
 		dialog=wx.MessageDialog(self,'Are the behavior examples already augmented previously?','Examples already augmented?',wx.YES_NO|wx.ICON_QUESTION)
