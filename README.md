@@ -93,12 +93,9 @@ If PowerShell blocks environment activation, run the following command once, the
 
 > **The `LabGym_LabGrymace` build is required — not optional.** LabGrymace reads output generated only by this modified LabGym 2.9.0 build. The latest `LabGym` (v3.x) is **not compatible**. Because the two packages have different names, they can be installed side by side. See [Two LabGyms, side by side](docs/LABGYM_CHANGES.md#two-labgyms-side-by-side).
 
-**Models are not included.** The trained detectors and categorizers are ~2 GB and exceed
-GitHub's file-size limit.
+**Models will be updated in Zenodo soon.**
 
-> **Model download:** *Coming soon.*
-
-Place a detector under `LabGym/LabGym_LabGrymace/detectors/` and a categorizer under
+**After updating the model**, place a detector under `LabGym/LabGym_LabGrymace/detectors/` and a categorizer under
 `LabGym/LabGym_LabGrymace/models/`, then select it in the GUI.
 
 ---
