@@ -1890,14 +1890,26 @@ def export_merged_correlation_table(sessions, organ, behavior, bilateral, out_xl
 # Video overlay writer
 # ============================================================================
 
-def write_overlay_video(video_path, per_frame_scores, output_path):
+def write_overlay_video(video_path, per_frame_scores, output_path, score_times=None):
     '''
     Read *video_path* frame by frame, draw the pain score in the top-right
     corner for every frame whose score is not NaN, and write the result to
     *output_path* (.mp4).
 
+    score_times : the real time (seconds) of each entry in per_frame_scores,
+        i.e. data['time']. When given, each video frame is matched to the score
+        whose time is closest to that frame's own timestamp (frame_index / fps).
+        This keeps the burned-in number aligned with the animal's facial state
+        even when the annotated video and the analysis ran at different frame
+        rates -- e.g. the annotated .avi is 18000 frames at 30 fps while the
+        analysis produced 17400 scores at 29 fps over the same 600 s. Matching by
+        index instead would let the two drift apart by ~1 s per 30 s. Pass it
+        whenever it is available; omit it only to reproduce the old index-based
+        behaviour.
+
     Returns (frames_written, warning_message).  warning_message is '' on
-    success, or a human-readable string when the frame counts differ.
+    success, or a human-readable string when the frame counts differ and no
+    time axis was supplied to reconcile them.
     '''
     import cv2
 
@@ -1911,12 +1923,16 @@ def write_overlay_video(video_path, per_frame_scores, output_path):
     v_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     s_frames = len(per_frame_scores)
 
+    times = None if score_times is None else np.asarray(score_times, dtype=float)
+
     warning = ''
-    if v_frames != s_frames:
+    if times is None and v_frames != s_frames:
         warning = (
             f'Frame count mismatch: video has {v_frames} frames, '
-            f'summary has {s_frames} frames.\n'
-            f'Overlay will be applied up to frame {min(v_frames, s_frames)}.'
+            f'summary has {s_frames} frames, and no time axis was given to align '
+            f'them. Overlay is applied by frame index up to frame '
+            f'{min(v_frames, s_frames)}, which drifts when the two frame rates '
+            f'differ. Pass score_times to align by time.'
         )
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
@@ -1927,14 +1943,26 @@ def write_overlay_video(video_path, per_frame_scores, output_path):
     thickness  = 4
     margin     = 12
 
+    def score_for(frame_index):
+        '''The score to draw on this video frame.'''
+        if times is None:
+            return per_frame_scores[frame_index] if frame_index < s_frames else np.nan
+        # Nearest score by time: this frame sits at frame_index / fps seconds.
+        t = frame_index / fps
+        j = int(np.searchsorted(times, t))
+        if j > 0 and (j >= len(times) or t - times[j - 1] <= times[j] - t):
+            j -= 1
+        return per_frame_scores[j]
+
     written = 0
     i = 0
     while True:
         ret, frame = cap.read()
         if not ret:
             break
-        if i < s_frames and not np.isnan(per_frame_scores[i]):
-            text = f'Pain: {per_frame_scores[i]:.1f}'
+        s = score_for(i)
+        if not np.isnan(s):
+            text = f'Pain: {s:.1f}'
             (tw, th), _ = cv2.getTextSize(text, font, font_scale, thickness)
             x = width  - tw - margin
             y = th + margin
@@ -2853,7 +2881,8 @@ class WindowLv2_PainScore(wx.Frame):
             busy = wx.BusyInfo('Generating overlay video, please wait…', parent=self)
             wx.GetApp().Yield()
 
-            written, warning = write_overlay_video(video_path, scores, out_path)
+            written, warning = write_overlay_video(
+                video_path, scores, out_path, score_times=record['data']['time'])
             del busy
 
             if warning:
