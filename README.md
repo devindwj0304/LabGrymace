@@ -21,8 +21,8 @@ This repository contains two parts:
 **2. Pain score analysis** 
 
 The analysis includes:
-- **`pain_scores.xlsx`** — one sheet per recording, one row per 100 s window (3000 frames at 30 fps), plus a `Summary` sheet giving each recording's overall score.
-- **`pain_scores_per_frame.xlsx`** — one row per frame. Each frame's score looks back 2 s (60 frames at 30 fps): every region's intensity is averaged over that window with the top 10% of values trimmed, then Z-scored and combined. The first 59 frames are therefore blank.
+- **`pain_scores.xlsx`** — one row per 100 s window, plus a `Summary` sheet with each recording's overall score.
+- **`pain_scores_per_frame.xlsx`** — a pain score for every frame, each computed over the preceding 2 s.
 - **`pain_score_chart.png`** — a dot plot of the batch, one point per recording.
 
 ![Pain score](docs/images/output-painscore.png)
