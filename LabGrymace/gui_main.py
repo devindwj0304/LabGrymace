@@ -1242,7 +1242,7 @@ def write_pain_score_outputs(records, output_path, window_range=None):
     produce byte-identical artifacts:
       - pain_scores.xlsx             (one sheet per animal: per-window rows + Summary)
       - pain_scores_per_frame.xlsx   (one sheet per animal: per-frame 2 s-window breakdown)
-      - pain_score_chart_<animal>.png (one time-course plot PER animal)
+      - pain_score_chart.png         (one dot plot; one point per animal)
     `records` = list of {'name', 'folder', 'data', 'windows'}. Returns output paths.
 
     window_range : (w_start, w_end) 1-based inclusive window indices, or None
@@ -1252,7 +1252,7 @@ def write_pain_score_outputs(records, output_path, window_range=None):
         = 0-500 s). Then EVERYTHING is consistent over that range: the per-window sheets
         contain only the kept windows, the per-frame sheets only the kept frames, the
         Summary reports the per-field mean of the kept windows (so averaging the shown
-        window rows reproduces it, and pain_score matches Figure 6), and each plot is drawn
+        window rows reproduces it, and pain_score matches Figure 6), and the plot is drawn
         over the kept range. A YELLOW note cell states the range in every sheet.
     '''
     from openpyxl.styles import PatternFill, Font
@@ -1440,56 +1440,56 @@ def write_pain_score_outputs(records, output_path, window_range=None):
                 ws.cell(row=1, column=hdr.index('pain_score') + 1).fill = YELLOW
     pf_writer.close()
 
-    # ── One temporal plot per animal ───────────────────────────────────────
-    # Deliberately one figure per recording rather than one figure with every
-    # animal overlaid: a single mouse's time course is what the pain dynamics
-    # are read from, and overlaid lines become unreadable past a few animals.
-    # Styled to match the published time-course panels (Figure 6C, H).
-    sec_per_win = FRAME_WINDOW / 30.0
-    chart_paths = []
-    for rec in records:
-        kw = kept(rec['windows'])
-        if not kw:
-            continue
-        x = [w['window'] for w in kw]
-        y = [round(w['pain_score'], 2) if wr is not None else w['pain_score'] for w in kw]
+    # ── One dot plot: every animal is a single point ───────────────────────
+    # One figure for the whole batch, one point per animal -- deliberately a
+    # dot plot rather than bars, so individual animals stay visible.
+    names  = [rec['name'] for rec in records]
+    if wr is None:
+        scores = [compute_overall_pain_score(rec['data'])['pain_score'] for rec in records]
+        ylabel = 'Overall Pain Score (full-recording mean)'
+    else:
+        scores = [_window_range_summary(rec['windows'], wr[0], wr[1])['pain_score']
+                  for rec in records]
+        ylabel = f'Pain Score ({rng_lbl} mean)'
 
-        fig, ax = plt.subplots(figsize=(max(3.2, 0.45 * len(x) + 2.0), 3.6))
-        ax.axhline(0, color='gray', linestyle='--', linewidth=1.2, alpha=0.6, zorder=1,
-                   label='Baseline (0)')
-        ax.axhline(100, color='red', linestyle='--', linewidth=1.2, alpha=0.4, zorder=1,
-                   label='1 mg/kg CNO (100)')
-        ax.plot(x, y, color='#1f77b4', lw=2.5, marker='o', markersize=8, zorder=3,
-                markeredgecolor='white', markeredgewidth=0.8)
-        for sp in ('top', 'right'):
-            ax.spines[sp].set_visible(False)
-        for sp in ('left', 'bottom'):
-            ax.spines[sp].set_linewidth(2.2)
-        ax.set_xticks(x)
-        ax.set_xticklabels([f'{int(w * sec_per_win)}' for w in x], fontsize=10)
-        ax.set_xlabel('Time (s)', labelpad=8, fontsize=11)
-        ax.set_ylabel('Pain Score', labelpad=3, fontsize=11)
-        ax.tick_params(axis='both', length=5, labelsize=10)
-        finite = [v for v in y if np.isfinite(v)]
-        lo = min(min(finite), 0) - 8 if finite else -8
-        hi = max(max(finite), 100) + 12 if finite else 112
-        ax.set_ylim(lo, hi)
-        ax.set_xlim(min(x) - 0.5, max(x) + 0.5)
-        title = rec['name'] + (f'  ({rng_lbl})' if wr is not None else '')
-        ax.set_title(title, fontsize=11, pad=8)
-        # Below the axes: the two reference lines span the full width, so any
-        # in-axes legend placement collides with one of them.
-        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.22), ncol=2,
-                  frameon=False, fontsize=9)
-        plt.tight_layout()
-        safe = re.sub(r'[^A-Za-z0-9._-]', '_', str(rec['name']))[:60]
-        cpath = os.path.join(output_path, f'pain_score_chart_{safe}.png')
-        fig.savefig(cpath, dpi=300, bbox_inches='tight', facecolor='white')
-        plt.close(fig)
-        chart_paths.append(cpath)
+    n_animals = len(records)
+    fig, ax = plt.subplots(figsize=(max(3.2, 0.55 * n_animals + 2.0), 3.8))
+    x = np.arange(1, n_animals + 1)
+    ax.axhline(0, color='gray', linestyle='--', linewidth=1.2, alpha=0.6, zorder=1,
+               label='Baseline (0)')
+    ax.axhline(100, color='red', linestyle='--', linewidth=1.2, alpha=0.4, zorder=1,
+               label='1 mg/kg CNO (100)')
+    ax.plot(x, scores, linestyle='none', marker='o', markersize=9, zorder=3,
+            color='#1f77b4', markeredgecolor='white', markeredgewidth=0.8)
+    for xi, val in zip(x, scores):
+        if np.isfinite(val):
+            ax.annotate(f'{val:.1f}', (xi, val), textcoords='offset points',
+                        xytext=(0, 9), ha='center', fontsize=8)
+    for sp in ('top', 'right'):
+        ax.spines[sp].set_visible(False)
+    for sp in ('left', 'bottom'):
+        ax.spines[sp].set_linewidth(2.2)
+    ax.set_xticks(x)
+    ax.set_xticklabels(names, rotation=30, ha='right', fontsize=9)
+    ax.set_ylabel(ylabel, labelpad=3, fontsize=11)
+    ax.tick_params(axis='both', length=5, labelsize=10)
+    finite = [v for v in scores if np.isfinite(v)]
+    lo = min(min(finite), 0) - 10 if finite else -10
+    hi = max(max(finite), 100) + 14 if finite else 114
+    ax.set_ylim(lo, hi)
+    ax.set_xlim(0.4, n_animals + 0.6)
+    # Above the axes: the reference lines span the full width so an in-axes
+    # legend collides with one of them, and below the axes it collides with the
+    # rotated animal labels.
+    ax.legend(loc='lower center', bbox_to_anchor=(0.5, 1.01), ncol=2,
+              frameon=False, fontsize=9)
+    plt.tight_layout()
+    chart_path = os.path.join(output_path, 'pain_score_chart.png')
+    fig.savefig(chart_path, dpi=300, bbox_inches='tight', facecolor='white')
+    plt.close(fig)
 
     return {'pain_scores': xlsx_path, 'pain_scores_per_frame': pf_path,
-            'pain_score_charts': chart_paths}
+            'pain_score_chart': chart_path}
 
 
 # ============================================================================
@@ -2555,7 +2555,7 @@ class WindowLv2_PainScore(wx.Frame):
             wx.Window.SetToolTip(
                 w,
                 f'Restrict every output (per-window sheet, per-frame sheet, Summary and\n'
-                f'the plots) to this time range. Enter any start/end seconds you like; the range\n'
+                f'the plot) to this time range. Enter any start/end seconds you like; the range\n'
                 f'snaps to whole {sec_per_win:.0f} s windows. Defaults to 0-500 s (windows 1-5).\n'
                 f'Uncheck for the full recording.',
             )
@@ -2591,7 +2591,7 @@ class WindowLv2_PainScore(wx.Frame):
         wx.Button.SetToolTip(
             button_out,
             'Outputs: pain_scores.xlsx (per-animal sheets + summary), '
-            'pain_scores_per_frame.xlsx, and one time-course plot per animal.',
+            'pain_scores_per_frame.xlsx, and pain_score_chart.png.',
         )
         self.text_output = wx.StaticText(panel, label='None.',
                                          style=wx.ALIGN_LEFT | wx.ST_ELLIPSIZE_END)
@@ -2601,7 +2601,7 @@ class WindowLv2_PainScore(wx.Frame):
         boxsizer.Add(0, 25, 0)
 
         # ── Start button ───────────────────────────────────────────────────
-        button_start = wx.Button(panel, label='Calculate pain score and generate plots', size=(330, 40))
+        button_start = wx.Button(panel, label='Calculate pain score and generate chart', size=(330, 40))
         button_start.Bind(wx.EVT_BUTTON, self.calculate_and_plot)
         wx.Button.SetToolTip(
             button_start,
@@ -2812,7 +2812,7 @@ class WindowLv2_PainScore(wx.Frame):
                 f'  — one sheet per animal; per-frame pain score with its 2 s (60-frame)\n'
                 f'    look-back window and full breakdown (win bounds, 2 s means, Z, raw, pain)\n\n'
                 f'Plots:\n'
-                f'  pain_score_chart_<animal>.png  (one time course per animal)\n\n'
+                f'  pain_score_chart.png  (one point per animal)\n\n'
                 f'Saved to: {self.output_path}',
                 'Success', wx.OK | wx.ICON_INFORMATION,
             )

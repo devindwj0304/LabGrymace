@@ -83,14 +83,14 @@ To make the score fully traceable for reviewers, the pain algorithm now also exp
 - **New GUI output file** `pain_scores_per_frame.xlsx` — written by the Pain-Score window's
   "Calculate" button alongside `pain_scores.xlsx`; one sheet per animal, produced via
   `per_frame_pain_dataframe`. So each analysis run now emits: `pain_scores.xlsx` (per-window) +
-  `pain_scores_per_frame.xlsx` (per-frame) + one `pain_score_chart_<animal>.png` per animal.
+  `pain_scores_per_frame.xlsx` (per-frame) + `pain_score_chart.png` (one point per animal).
 - Fixed a stale tooltip on the "Generate Video with Pain Score Overlay" button: it wrongly said
   "±15-frame rolling window / first and last 15 frames"; corrected to the actual **causal 60-frame
   (2 s) look-back; first 59 frames have no score**.
 - The Pain-Score "Calculate" success dialog now also lists `pain_scores_per_frame.xlsx` in its
   output summary.
 - `write_pain_score_outputs(records, output_path, window_range=None)` — new module-level
-  function holding ALL the file writing (both xlsx + the per-animal plots). The GUI "Calculate" button
+  function holding ALL the file writing (both xlsx + the chart). The GUI "Calculate" button
   and the headless batch driver both call it, so GUI output and scripted output are
   byte-identical by construction. `records` = list of `{'name','folder','data','windows'}`.
 
