@@ -45,19 +45,14 @@ Requires **Python 3.10** (Python 3.9 and 3.11 are also supported).
 
 > **Use a dedicated environment—never install into the conda `base` environment.**
 > LabGrymace depends on specific versions of TensorFlow and NumPy. Installing it into a shared environment may downgrade these packages and break other software. Create a dedicated environment before installing and make sure it is **active** (your prompt shows its name, e.g. `(.venv)` or `(labgrymace)`) before running `pip install`.
->
-> If you use Miniconda or Anaconda, a named conda environment is the most reliable choice:
->
-> ```bash
-> conda create -n labgrymace python=3.10 -y
-> conda activate labgrymace
-> ```
->
-> Then follow the **macOS** or **Windows** steps below, but **skip the two `.venv` lines**
-> (the one that creates `.venv` and the one that activates it) — the conda environment you
-> just activated replaces them. Run every other line as written.
 
-### macOS
+Choose **one** of the two setups below — you do not need both. On Windows, first install
+Python from <https://www.python.org/downloads/windows/>, tick **"Add python.exe to PATH"**,
+then use **PowerShell**.
+
+### Option A — `venv` (built into Python, nothing extra to install)
+
+**macOS**
 
 ```bash
 git clone https://github.com/devindwj0304/LabGym-LabGrymace.git
@@ -69,13 +64,7 @@ pip install .
 pip install ./LabGym
 ```
 
-This installs two commands: **`LabGrymace`** (the pain tool) and **`LabGym_LabGrymace`**
-(our modified LabGym build). On Apple Silicon (M1–M4), use a native **arm64** Python from
-<https://www.python.org/downloads/macos/>. Running under Rosetta may prevent TensorFlow from installing or running correctly.
-
-### Windows
-
-Install Python from <https://www.python.org/downloads/windows/> and select **"Add python.exe to PATH"** during installation. Then open **PowerShell** and run:
+**Windows**
 
 ```powershell
 git clone https://github.com/devindwj0304/LabGym-LabGrymace.git
@@ -87,11 +76,30 @@ pip install .
 pip install ./LabGym
 ```
 
-This installs two commands: **`LabGrymace`** (the pain tool) and **`LabGym_LabGrymace`**
-(our modified LabGym build). 
+### Option B — `conda` (if you already use Miniconda or Anaconda)
 
-If PowerShell blocks environment activation, run the following command once, then try again:
-`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
+The same commands work on macOS and Windows:
+
+```bash
+git clone https://github.com/devindwj0304/LabGym-LabGrymace.git
+cd LabGym-LabGrymace
+conda create -n labgrymace python=3.10 -y
+conda activate labgrymace
+pip install --upgrade pip
+pip install .
+pip install ./LabGym
+```
+
+Either option installs two commands: **`LabGrymace`** (the pain tool) and
+**`LabGym_LabGrymace`** (our modified LabGym build).
+
+**If something goes wrong**
+
+- **Apple Silicon (M1–M4):** use a native **arm64** Python from
+  <https://www.python.org/downloads/macos/>. Running under Rosetta may prevent TensorFlow
+  from installing or running correctly.
+- **Windows:** if PowerShell blocks environment activation, run
+  `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, then try again.
 
 > **The `LabGym_LabGrymace` build is required — not optional.** LabGrymace reads output generated only by this modified LabGym 2.9.0 build. The latest `LabGym` (v3.x) is **not compatible**. Because the two packages have different names, they can be installed side by side. See [Two LabGyms, side by side](docs/LABGYM_CHANGES.md#two-labgyms-side-by-side).
 
