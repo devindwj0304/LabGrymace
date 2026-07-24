@@ -22,7 +22,7 @@ This repository contains two parts:
 
 The analysis includes:
 - **`pain_scores.xlsx`** — one row per 100 s window, plus a `Summary` sheet with each recording's overall score.
-- **`pain_scores_per_frame.xlsx`** — a pain score for every frame, each computed over the preceding 2 s.
+- **`pain_scores_per_frame.xlsx`** — a pain score for every frame.
 - **`pain_score_chart.png`** — a dot plot of the batch, one point per recording.
 
 ![Pain score](docs/images/output-painscore.png)
@@ -53,7 +53,9 @@ Requires **Python 3.10** (Python 3.9 and 3.11 are also supported).
 > conda activate labgrymace
 > ```
 >
-> Then run the two `pip install` lines below inside it (skip the `venv` step).
+> Then follow the **macOS** or **Windows** steps below, but **skip the two `.venv` lines**
+> (the one that creates `.venv` and the one that activates it) — the conda environment you
+> just activated replaces them. Run every other line as written.
 
 ### macOS
 
