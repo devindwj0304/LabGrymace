@@ -140,7 +140,7 @@ The **`LabGrymace`** workflow consists of two steps:
 1. **Generate summary files** — Select the folder containing the LabGym output. LabGrymace generates `ear_summary.xlsx`, `eye_summary.xlsx`, and `nose_summary.xlsx` files for each recording.
 2. **Compute pain scores** — Select the folders containing the summary files. LabGrymace generates `pain_scores.xlsx`, `pain_scores_per_frame.xlsx` and, optionally, an annotated video with the pain score overlaid on each frame.
 
-The reflection filter is **disabled by default** and can be enabled with a checkbox during step 2. The figures in the accompanying manuscript were generated with this filter enabled, and the reproduction scripts set it automatically.
+The reflection filter is **disabled by default** and can be enabled with a checkbox during step 2. The pain scores reported in the manuscript were computed with it **on**; the feature-selection analyses deliberately used **unfiltered** data. The reproduction scripts set it explicitly either way.
 
 ## Advanced usage
 
