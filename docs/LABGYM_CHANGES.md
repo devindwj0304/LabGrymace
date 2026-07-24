@@ -1,8 +1,27 @@
-# How our LabGym differs from upstream v2.9.0
+# How our LabGym differs from upstream
 
-[`LabGym/`](../LabGym) is **LabGym v2.9.0** with the upstream v2.9.1 logging/CLI update
-backported, plus the changes below. It is included in this repository because LabGrymace
-consumes its output, and several of these changes are what make that output usable.
+[`LabGym/`](../LabGym) is the **upstream LabGym v2.9.1 source tree**, with the changes
+below. It reports `__version__ = '2.9.0'`, the version LabGrymace was calibrated against.
+It is included in this repository because LabGrymace consumes its output, and several of
+these changes are what make that output usable.
+
+Diffed file by file against upstream v2.9.1: of the package's 18 Python modules (excluding
+the vendored detectron2 tree), **8 are byte-identical to upstream and 10 differ**. Every
+differing block carries a `!New Update from Wenjin` comment, so the modifications can be
+found by searching the source for that tag.
+
+| Modified | What changed |
+|---|---|
+| `__init__.py` | GPU memory setup before any submodule import |
+| `__main__.py` | startup PyPI version check removed |
+| `gui_main.py` | credits and links for this build |
+| `gui_analyzer.py` | unsupported-categorizer guard, per-animal behavior filtering |
+| `gui_categorizer.py` | per-frame ROI export option |
+| `gui_preprocessor.py` | automatic AV1 -> H.264 recovery |
+| `tools.py` | CUDA path from the environment, per-frame pattern images, crash guards |
+| `categorizer.py` | TF 2.17 / Keras 3 loading, `.keras` output, confusion matrices |
+| `analyzebehavior.py` | CPU-pinned inference, trajectory and encoding fixes |
+| `analyzebehavior_dt.py` | per-animal behavior filtering, low-confidence handling |
 
 Upstream: <https://github.com/umyelab/LabGym> (Ye Lab, University of Michigan), GPL-3.0.
 
@@ -64,21 +83,43 @@ pip show LabGym LabGym_LabGrymace
   *(`categorizer.py`)*
 
 - **Robustness fixes** — guards against empty contour sets, zero-area contours, `None`
-  frames, and out-of-bounds writes that previously raised.
+  frames, an empty `cdist` call during tracking, and `math.sqrt` on a non-positive animal
+  area — all of which previously raised.
   *(`tools.py`, `analyzebehavior.py`, `analyzebehavior_dt.py`)*
+
+- **Shared GPU between TensorFlow and PyTorch** — `__init__.py` sets TensorFlow memory
+  growth and `PYTORCH_CUDA_ALLOC_CONF` before any submodule is imported, so detectron2 and
+  the categorizer can share one GPU instead of the first framework claiming all of it.
+  *(`__init__.py`)*
+
+- **Trajectory rendering fix** — trajectories are drawn onto a copy of the background, so
+  `Trajectory.jpg` is no longer progressively overwritten, and the same trajectories are
+  also drawn on the annotated video frames. *(`analyzebehavior.py`)*
+
+- **Unsupported categorizers are refused** — a categorizer whose `model_parameters.txt`
+  declares behavior mode 4 is rejected with a clear message instead of failing mid-run.
+  *(`gui_analyzer.py`, `analyzebehavior.py`)*
+
+- **UTF-8 analysis log** — `Analysis log.txt` is written as UTF-8, fixing the
+  `UnicodeEncodeError` on non-ASCII paths. *(`analyzebehavior.py`)*
+
+- **No startup version check** — upstream contacts pypi.org on every launch and prompts
+  users to upgrade; that call is removed, since it stalls behind restricted networks and
+  the newer release cannot be used with LabGrymace. *(`__main__.py`)*
 
 ---
 
 ## Differences that change results
 
-Three changes alter output rather than only preventing crashes. They are listed
+Four changes alter output rather than only preventing crashes. They are listed
 separately so anyone comparing against stock LabGym knows where numbers may diverge.
 
-| Change | Stock LabGym v2.9.0 | This build |
-|---|---|---|
-| Low-confidence frames with `uncertain == 0` | left as `NA` | **always** assigned the most likely behavior |
-| Trained model format | SavedModel directory | `best_model.keras` / `final_model.keras` inside the model directory — **not loadable by stock v2.9.0** |
-| Zero-mask frames | contribute a `nan` to `area_diffs` | contribute no entry, slightly changing `magnitude_area` and `vigor_area` |
+| Change | Upstream v2.9.1 | This build | Where |
+|---|---|---|---|
+| Low-confidence frames with `uncertain == 0` | left as `NA` | **always** assigned the most likely behavior | `analyzebehavior_dt.py` |
+| A prediction outside an animal's own behavior list | kept | suppressed to `NA` | `analyzebehavior_dt.py` |
+| Trained model format | SavedModel directory | `best_model.keras` / `final_model.keras` inside the model directory — **not loadable by upstream v2.9.1** | `categorizer.py` |
+| Zero-mask frames | contribute a `nan` to `area_diffs` | contribute no entry, slightly changing `magnitude_area` and `vigor_area` | `analyzebehavior_dt.py` |
 
 ---
 
