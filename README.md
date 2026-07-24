@@ -163,7 +163,6 @@ print("overall pain score:", round(score, 2))
 ## Documentation
 
 - **[How LabGym_LabGrymace differs from upstream](docs/LABGYM_CHANGES.md)** — describes the modifications made to LabGym and identifies those that affect results.
-- **[Troubleshooting](docs/TROUBLESHOOTING.md)** — solutions to common installation and usage issues.
 
 ---
 
