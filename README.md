@@ -24,6 +24,7 @@ This repository contains two parts:
 
 The analysis includes:
 - **`pain_scores.xlsx`** — one sheet per recording, one row per 100 s window (3000 frames at 30 fps), plus a `Summary` sheet giving each recording's overall score.
+- **`pain_score_chart_<recording>.png`** — a time-course plot for **each recording separately**, one point per 100 s window, with the baseline (0) and 1 mg/kg CNO (100) reference lines.
 - **`pain_scores_per_frame.xlsx`** — one sheet per recording, one row per frame. Each frame's score looks back 2 s (60 frames at 30 fps): every region's intensity is averaged over that window with the top 10% of values trimmed, then Z-scored and combined. The first 59 frames are therefore blank, and every intermediate value is kept in the row so a score can be retraced.
 
 ***`pain_scores_per_frame.xlsx` — one row per frame. `win_start_frame` / `win_end_frame` show the 2 s look-back window, `ear_2s_mean` / `eye_2s_mean` / `nose_2s_mean` the trimmed means over it, and the yellow `pain_score` column the resulting 0-100 score.***
@@ -138,7 +139,7 @@ python -m LabGym_LabGrymace
 The **`LabGrymace`** workflow consists of two steps:
 
 1. **Generate summary files** — Select the folder containing the LabGym output. LabGrymace generates `ear_summary.xlsx`, `eye_summary.xlsx`, and `nose_summary.xlsx` files for each recording.
-2. **Compute pain scores** — Select the folders containing the summary files. LabGrymace generates `pain_scores.xlsx`, `pain_scores_per_frame.xlsx` and, optionally, an annotated video with the pain score overlaid on each frame.
+2. **Compute pain scores** — Select the folders containing the summary files. LabGrymace generates `pain_scores.xlsx`, `pain_scores_per_frame.xlsx`, one time-course plot per recording, and, optionally, an annotated video with the pain score overlaid on each frame.
 
 The reflection filter is **disabled by default** and can be enabled with a checkbox during step 2. The pain scores reported in the manuscript were computed with it **on**; the feature-selection analyses deliberately used **unfiltered** data. The reproduction scripts set it explicitly either way.
 
