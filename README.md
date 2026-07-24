@@ -35,7 +35,7 @@ The analysis includes:
 
 An `.mp4` copy of the original recording with the continuously updated pain score overlaid on each frame, allowing direct comparison between the quantified pain score and the animal's behavior.
 
-***The same overlay for a mouse under high-dose CNO (left, high pain score) and a baseline mouse (right, low pain score). The running score is drawn on every frame.***
+***The same overlay for a mouse under high-dose CNO (left, high pain score) and an uninjected baseline mouse (right, lower pain score). The running score is drawn on every frame; both panels are shown at the same size.***
 
 | High CNO — in pain | Baseline — no pain |
 |:---:|:---:|
