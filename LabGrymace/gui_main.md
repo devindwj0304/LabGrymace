@@ -83,14 +83,14 @@ To make the score fully traceable for reviewers, the pain algorithm now also exp
 - **New GUI output file** `pain_scores_per_frame.xlsx` — written by the Pain-Score window's
   "Calculate" button alongside `pain_scores.xlsx`; one sheet per animal, produced via
   `per_frame_pain_dataframe`. So each analysis run now emits: `pain_scores.xlsx` (per-window) +
-  `pain_scores_per_frame.xlsx` (per-frame) + `pain_score_chart.png` + `overall_pain_score_chart.png`.
+  `pain_scores_per_frame.xlsx` (per-frame).
 - Fixed a stale tooltip on the "Generate Video with Pain Score Overlay" button: it wrongly said
   "±15-frame rolling window / first and last 15 frames"; corrected to the actual **causal 60-frame
   (2 s) look-back; first 59 frames have no score**.
 - The Pain-Score "Calculate" success dialog now also lists `pain_scores_per_frame.xlsx` in its
   output summary.
 - `write_pain_score_outputs(records, output_path, window_range=None)` — new module-level
-  function holding ALL the file/chart writing (the 2 xlsx + 2 png). The GUI "Calculate" button
+  function holding ALL the file writing (both xlsx). The GUI "Calculate" button
   and the headless batch driver both call it, so GUI output and scripted output are
   byte-identical by construction. `records` = list of `{'name','folder','data','windows'}`.
 
@@ -114,7 +114,6 @@ now support restricting every output to a whole-window time range.
       raw_score`), so averaging the shown 2 dp window rows reproduces the Summary exactly, and
       `pain_score` equals the Figure 6 per-recording value (0-500 s = mean of the 2 dp windows
       1-5) — same-source / same-precision, no 0.01 drift;
-    - both charts are drawn over the kept range;
     - a **yellow note cell** in every sheet states the active range, and the `pain_score`
       column is highlighted yellow;
     - every metric column (`pain_score, ear/eye/nose_intensity, Z_*, raw_score`, plus the
