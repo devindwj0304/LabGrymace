@@ -14,16 +14,15 @@ This repository contains two parts:
 
 ## The outputs of LabGrymace:
 
-**1. Summary spreadsheets** — Three Excel files (`ear_summary.xlsx`, `eye_summary.xlsx`, `nose_summary.xlsx`) containing frame-by-frame measurements for each facial region. Frames removed by the mirror-reflection filter are highlighted in **orange**, and the merged measurements used for pain-score calculation are highlighted in **yellow**.
+**1. Summary spreadsheets** — Three Excel files per recording (`ear_summary.xlsx`, `eye_summary.xlsx`, `nose_summary.xlsx`), each holding the frame-by-frame measurements for that facial region. In the `Summary` sheet the merged column that feeds the pain score is highlighted **yellow**; two traceability sheets (`PanelB_behavior`, `PanelC_painscore`) add the per-frame behavior labels and mark the frames dropped by the mirror-reflection filter in **orange**.
 
 ![Summary spreadsheet](docs/images/output-summary.png)
 
 **2. Pain score analysis** 
 
 The analysis includes:
-- **`pain_scores.xlsx`** — one overall pain score for each recording.
+- **`pain_scores.xlsx`** — one sheet per recording, one row per 100 s window (3000 frames at 30 fps), plus a `Summary` sheet giving each recording's overall score.
 - **`pain_scores_per_frame.xlsx`** — one sheet per recording, one row per frame. Each frame's score looks back 2 s (60 frames at 30 fps): every region's intensity is averaged over that window with the top 10% of values trimmed, then Z-scored and combined. The first 59 frames are therefore blank, and every intermediate value is kept in the row so a score can be retraced.
-- **`pain_score_chart.png`** and **`overall_pain_score_chart.png`** — plots of pain-score dynamics and overall pain scores.
 
 ![Pain score](docs/images/output-painscore.png)
 
@@ -133,7 +132,7 @@ python -m LabGym_LabGrymace
 The **`LabGrymace`** workflow consists of two steps:
 
 1. **Generate summary files** — Select the folder containing the LabGym output. LabGrymace generates `ear_summary.xlsx`, `eye_summary.xlsx`, and `nose_summary.xlsx` files for each recording.
-2. **Compute pain scores** — Select the folders containing the summary files. LabGrymace generates `pain_scores.xlsx`, `pain_scores_per_frame.xlsx`, summary charts, and (optionally) an annotated video with pain score overlaid on each frame.
+2. **Compute pain scores** — Select the folders containing the summary files. LabGrymace generates `pain_scores.xlsx`, `pain_scores_per_frame.xlsx` and, optionally, an annotated video with the pain score overlaid on each frame.
 
 The reflection filter is **disabled by default** and can be enabled with a checkbox during step 2. The figures in the accompanying manuscript were generated with this filter enabled, and the reproduction scripts set it automatically.
 
