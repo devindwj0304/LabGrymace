@@ -1937,6 +1937,15 @@ def write_overlay_video(video_path, per_frame_scores, output_path, score_times=N
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out    = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+    if not out.isOpened():
+        # A freshly forked worker can hand back a VideoWriter that never opened
+        # (the FFmpeg backend is not warmed up yet); it then silently writes
+        # nothing. Retry once so the caller gets a real file or a clear error
+        # instead of an empty output.
+        out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+        if not out.isOpened():
+            cap.release()
+            raise IOError(f'Cannot open video writer for: {output_path}')
 
     font       = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 2.6
