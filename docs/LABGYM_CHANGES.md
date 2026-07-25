@@ -29,7 +29,7 @@ Rows marked **\*** change the output numbers; the rest prevent crashes or add co
 | File | Change |
 |---|---|
 | `analyzebehavior_dt.py` | **\*** per-animal behavior filtering; low-confidence frames assigned instead of `NA`; zero-mask frames dropped from `area_diffs` |
-| `categorizer.py` | **\*** trained models saved as `.keras` (not loadable by upstream); TF 2.17 / Keras 3 loading; confusion matrices; batch size 128 |
+| `categorizer.py` | **\*** trained models saved as `.keras` (not loadable by upstream); TF 2.17 / Keras 3 loading; confusion matrices |
 | `analyzebehavior.py` | categorizer inference pinned to CPU (avoids detectron2 CUDA clash); trajectory and UTF-8 log fixes |
 | `tools.py` | `CUDA_HOME` read from the environment (not a hardcoded cluster path); per-frame pattern images; guards for `None` frames, empty contours, zero area |
 | `gui_preprocessor.py` | unreadable videos (e.g. AV1) auto-transcoded to H.264 |
