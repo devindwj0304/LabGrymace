@@ -31,6 +31,21 @@ pip uninstall -y tensorflow
 conda install -c conda-forge "tensorflow>=2.10.1,<2.16.0"
 ```
 
+## Linux
+
+Install into a dedicated environment with Python 3.10. A conda environment is
+shown; a virtual environment works the same way.
+
+```
+conda create -n labgrymace python=3.10 -y
+conda activate labgrymace
+pip install ./LabGym
+LabGym_LabGrymace
+```
+
+pip installs a TensorFlow build in the range 2.10.1 to 2.15. The GUI requires a
+graphical display, so it does not open on a headless server.
+
 # LabGym: quantifying user-defined behaviors
 
 [![PyPI - Version](https://img.shields.io/pypi/v/LabGym)](https://pypi.org/project/LabGym/)
