@@ -20,8 +20,8 @@ Email: bingye@umich.edu
 # Adds TensorFlow 2.17 / Keras 3 compatibility: legacy SavedModel directories load
 # through a wrapper that works around the add_slot error and pins inference to CPU
 # to avoid CUDA conflicts with detectron2. Trained models are written as
-# .keras files, diagnostic confusion matrices are exported alongside training and
-# testing, and train_combnet_onfly uses a batch size of 128.
+# .keras files, and diagnostic confusion matrices are exported alongside training
+# and testing.
 # Every change is marked with the same tag below.
 
 
@@ -1940,13 +1940,13 @@ class Categorizers():
 		if os.path.isdir(train_folder) and os.path.isdir(validation_folder):
 
 			if dim_tconv<=16:
-				batch_size=128
-			elif dim_tconv<=64:
-				batch_size=64
-			elif dim_tconv<=128:
 				batch_size=32
-			else:
+			elif dim_tconv<=64:
 				batch_size=16
+			elif dim_tconv<=128:
+				batch_size=8
+			else:
+				batch_size=4
 
 			train_data=DatasetFromPath_AA(train_folder,length=time_step,batch_size=batch_size,dim_tconv=dim_tconv,dim_conv=dim_conv,channel=channel)
 			validation_data=DatasetFromPath_AA(validation_folder,length=time_step,batch_size=batch_size,dim_tconv=dim_tconv,dim_conv=dim_conv,channel=channel)
