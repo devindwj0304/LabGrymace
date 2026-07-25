@@ -54,10 +54,12 @@ def test_loader_length_rounds_down():
 
 
 def test_training_batch_sizes():
-    # train_combnet holds all examples in memory and uses batch 32; the on-the-fly
-    # variant streams from disk and uses batch 128.
+    # Both training paths use the default batch schedule, whose largest batch is 32.
+    # The on-the-fly variant no longer uses 128.
+    onfly = _method_source('train_combnet_onfly').replace(' ', '')
     assert 'batch_size=32' in _method_source('train_combnet').replace(' ', '')
-    assert 'batch_size=128' in _method_source('train_combnet_onfly').replace(' ', '')
+    assert 'batch_size=32' in onfly
+    assert 'batch_size=128' not in onfly
 
 
 def test_keras_savedmodel_loader_present():
