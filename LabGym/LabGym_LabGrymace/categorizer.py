@@ -2180,12 +2180,13 @@ class Categorizers():
 		n=len(classnames)
 		cm=confusion_matrix(true_labels,pred_labels,labels=list(range(n)))
 
-		# Publication font sizes. The title and axis labels are large so the figure
-		# stays readable at print size; the colorbar carries a bold 'Count' label.
+		# Publication font sizes. The title, axis labels, and class labels are large so
+		# the figure stays readable at print size; the colorbar carries a bold 'Count'
+		# label. Cell counts and colorbar ticks stay at their base size.
 		FS_CELL=15
-		FS_TICK=15
-		FS_AXIS=22
-		FS_TITLE=24
+		FS_TICK=20
+		FS_AXIS=26
+		FS_TITLE=28
 		FS_CBAR=14
 
 		fig,ax=plt.subplots(figsize=(max(6,n*1.2)+0.8,max(5,n*1.1)))
