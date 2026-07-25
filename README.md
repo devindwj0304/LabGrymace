@@ -52,7 +52,7 @@ then use **PowerShell**.
 
 ### Option A — `venv` (built into Python, nothing extra to install)
 
-**macOS**
+**macOS and Linux**
 
 ```bash
 git clone https://github.com/devindwj0304/LabGym-LabGrymace.git
@@ -78,7 +78,7 @@ pip install ./LabGym
 
 ### Option B — `conda` (if you already use Miniconda or Anaconda)
 
-The same commands work on macOS and Windows:
+The same commands work on macOS, Windows, and Linux:
 
 ```bash
 git clone https://github.com/devindwj0304/LabGym-LabGrymace.git
