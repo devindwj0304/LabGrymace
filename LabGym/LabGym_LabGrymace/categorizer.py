@@ -2088,6 +2088,11 @@ class Categorizers():
 
 		if len(incorrect_behaviors)==0 and len(incorrect_classes)==0:
 
+			# !New Update from Wenjin
+			# Read every example file directly and predict on all of them, so the
+			# confusion matrix covers the full test set. The batched loader
+			# DatasetFromPath_AA sets its length to floor(N / batch_size), which drops
+			# the last partial batch; using it here would leave some examples unscored.
 			for behavior in behaviornames:
 
 				if network!=0:
@@ -2175,9 +2180,19 @@ class Categorizers():
 		n=len(classnames)
 		cm=confusion_matrix(true_labels,pred_labels,labels=list(range(n)))
 
-		fig,ax=plt.subplots(figsize=(max(6,n*1.2),max(5,n*1.1)))
+		# Publication font sizes. The title and axis labels are large so the figure
+		# stays readable at print size; the colorbar carries a bold 'Count' label.
+		FS_CELL=15
+		FS_TICK=15
+		FS_AXIS=22
+		FS_TITLE=24
+		FS_CBAR=14
+
+		fig,ax=plt.subplots(figsize=(max(6,n*1.2)+0.8,max(5,n*1.1)))
 		im=ax.imshow(cm,interpolation='nearest',cmap='Blues')
-		fig.colorbar(im,ax=ax,fraction=0.046,pad=0.04)
+		cbar=fig.colorbar(im,ax=ax,fraction=0.046,pad=0.04)
+		cbar.ax.tick_params(labelsize=FS_CBAR)
+		cbar.set_label('Count',fontsize=FS_AXIS,fontweight='bold',rotation=270,labelpad=28)
 
 		thresh=cm.max()/2.0 if cm.max()>0 else 0.5
 		for i in range(n):
@@ -2189,15 +2204,15 @@ class Categorizers():
 					text=str(count) if f1 is None else str(count)+'\nF1:'+format(f1,'.2f')
 				else:
 					text=str(count)
-				ax.text(j,i,text,ha='center',va='center',color=color,fontsize=9)
+				ax.text(j,i,text,ha='center',va='center',color=color,fontsize=FS_CELL)
 
 		ax.set_xticks(range(n))
 		ax.set_yticks(range(n))
-		ax.set_xticklabels(classnames,rotation=45,ha='right')
-		ax.set_yticklabels(classnames)
-		ax.set_xlabel('Predicted',fontweight='bold')
-		ax.set_ylabel('Actual',fontweight='bold')
-		ax.set_title('Diagnostic Confusion Matrix',fontweight='bold')
+		ax.set_xticklabels(classnames,rotation=45,ha='right',fontsize=FS_TICK)
+		ax.set_yticklabels(classnames,fontsize=FS_TICK)
+		ax.set_xlabel('Predicted',fontweight='bold',fontsize=FS_AXIS)
+		ax.set_ylabel('Actual',fontweight='bold',fontsize=FS_AXIS)
+		ax.set_title('Diagnostic Confusion Matrix',fontweight='bold',fontsize=FS_TITLE)
 		plt.tight_layout()
 
 		save_path=os.path.join(result_path,'diagnostic_confusion_matrix.png')
