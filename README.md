@@ -96,8 +96,10 @@ Either option installs two commands: **`LabGrymace`** (the pain tool) and
 **If something goes wrong**
 
 - **Apple Silicon (M1–M4):** use a native **arm64** Python from
-  <https://www.python.org/downloads/macos/>. Running under Rosetta may prevent TensorFlow
-  from installing or running correctly.
+  <https://www.python.org/downloads/macos/>. The x86 TensorFlow build requires AVX
+  instructions, which Rosetta does not provide, so a Rosetta environment aborts on launch.
+  To stay on Rosetta, install TensorFlow from conda-forge, which is built without AVX:
+  `conda install -c conda-forge "tensorflow>=2.10.1,<2.16.0"`.
 - **Windows:** if PowerShell blocks environment activation, run
   `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, then try again.
 
