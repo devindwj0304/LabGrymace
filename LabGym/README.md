@@ -6,46 +6,6 @@
 >
 > The rest of this page is the upstream LabGym README, kept for reference.
 
-## macOS (Apple Silicon)
-
-The x86 TensorFlow build requires AVX instructions, which Rosetta does not
-provide, so LabGrymace aborts on launch in an Intel (Rosetta) environment. Check
-the architecture with `python -c "import platform; print(platform.machine())"`:
-`arm64` is native and `x86_64` runs under Rosetta. Either environment below works.
-
-Native arm64 (recommended):
-
-```
-CONDA_SUBDIR=osx-arm64 conda create -n labgrymace python=3.10 -y
-conda activate labgrymace
-conda config --env --set subdir osx-arm64
-pip install ./LabGym
-```
-
-Intel (Rosetta): install TensorFlow from conda-forge, which is built without AVX,
-after installing LabGrymace:
-
-```
-pip install ./LabGym
-pip uninstall -y tensorflow
-conda install -c conda-forge "tensorflow>=2.10.1,<2.16.0"
-```
-
-## Linux
-
-Install into a dedicated environment with Python 3.10. A conda environment is
-shown; a virtual environment works the same way.
-
-```
-conda create -n labgrymace python=3.10 -y
-conda activate labgrymace
-pip install ./LabGym
-LabGym_LabGrymace
-```
-
-pip installs a TensorFlow build in the range 2.10.1 to 2.15. The GUI requires a
-graphical display, so it does not open on a headless server.
-
 # LabGym: quantifying user-defined behaviors
 
 [![PyPI - Version](https://img.shields.io/pypi/v/LabGym)](https://pypi.org/project/LabGym/)
