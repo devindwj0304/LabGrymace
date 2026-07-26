@@ -167,6 +167,15 @@ python -m LabGrymace
 python -m LabGym_LabGrymace
 ```
 
+You can also start either application from a Python session. This follows the upstream
+LabGym method, but uses this build's package names, `LabGrymace` and `LabGym_LabGrymace`,
+rather than the upstream `LabGym`:
+
+```python
+from LabGrymace import __main__; __main__.main()          # the pain tool
+from LabGym_LabGrymace import __main__; __main__.main()    # the modified LabGym build
+```
+
 > **The two applications run independently.** `LabGrymace` opens immediately. 
 > **`LabGym_LabGrymace` typically takes 10–30 seconds to start** the first time because it loads TensorFlow and Detectron2 before the GUI appears.
 
