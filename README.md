@@ -68,6 +68,26 @@ pip install .
 pip install ./LabGym
 ```
 
+If `LabGym_LabGrymace` aborts on launch with a TensorFlow AVX error, the virtual
+environment is x86 and runs under Rosetta, which does not provide AVX. Rebuild it as a
+native arm64 environment using the arm64 build of the universal2 Python:
+
+```bash
+rm -rf .venv
+arch -arm64 /Library/Frameworks/Python.framework/Versions/3.10/bin/python3 -m venv .venv
+source .venv/bin/activate
+python -c "import platform; print(platform.machine())"   # must print arm64
+pip install --upgrade pip wheel setuptools
+pip install .
+pip install ./LabGym
+```
+
+Confirm that TensorFlow loads without aborting:
+
+```bash
+python -c "import tensorflow as tf; print('TF OK', tf.__version__)"
+```
+
 ### Windows
 
 Download the **Windows 64-bit** Python 3.10 installer from
