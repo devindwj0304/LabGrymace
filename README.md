@@ -146,27 +146,6 @@ The **`LabGrymace`** workflow consists of two steps:
 
 The reflection filter is **disabled by default** and can be enabled with a checkbox during step 2. The figures in the accompanying manuscript were generated with this filter enabled, and the reproduction scripts set it automatically.
 
-## Advanced usage
-
-Most users will use the graphical interface, but the core functions can also be called from the command line or imported into Python scripts.
-
-### Command line
-
-Generate summary files from a folder containing LabGym output:
-
-```bash
-python -m LabGrymace.loaddata "/path/to/folder/of/LabGym/datasets"
-```
-
-```python
-import numpy as np
-from LabGrymace.gui_main import load_raw_data, compute_per_frame_pain_scores
-
-data  = load_raw_data("/path/to/one/animal/folder")
-score = float(np.nanmean(compute_per_frame_pain_scores(data, lookback=60)))
-print("overall pain score:", round(score, 2))
-```
-
 ---
 
 ## Documentation
