@@ -2553,32 +2553,6 @@ class WindowLv2_PainScore(wx.Frame):
         boxsizer.Add(module_top, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
         boxsizer.Add(0, 10, 0)
 
-        # ── Row 2: Algorithm info ──────────────────────────────────────────
-        module_alg = wx.BoxSizer(wx.HORIZONTAL)
-        lbl_alg = wx.StaticText(panel, label='Algorithm:', size=(300, -1))
-        self.text_alg = wx.StaticText(
-            panel,
-            label=f'CNO Weighted Z-score  |  W_ear={W_EAR:.3f}  W_eye={W_EYE:.3f}  W_nose={W_NOSE:.3f}  '
-                  f'|  Window={FRAME_WINDOW} frames',
-            style=wx.ALIGN_LEFT | wx.ST_ELLIPSIZE_END,
-        )
-        module_alg.Add(lbl_alg,          0, wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 10)
-        module_alg.Add(self.text_alg,    1, wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 5)
-        boxsizer.Add(module_alg, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
-        boxsizer.Add(0, 6, 0)
-
-        # ── Row 3: Normalization reference ────────────────────────────────
-        module_ref = wx.BoxSizer(wx.HORIZONTAL)
-        lbl_ref = wx.StaticText(panel, label='Normalization:', size=(300, -1))
-        lbl_ref_val = wx.StaticText(
-            panel,
-            label=f'0 = true baseline (4-mouse avg)   |   100 = 1 mg/kg CNO',
-        )
-        module_ref.Add(lbl_ref,     0, wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 10)
-        module_ref.Add(lbl_ref_val, 0, wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 5)
-        boxsizer.Add(module_ref, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
-        boxsizer.Add(0, 10, 0)
-
         # ── Row 3b: Analysis time range (seconds) ─────────────────────────
         module_range = wx.BoxSizer(wx.HORIZONTAL)
         self.chk_range = wx.CheckBox(panel, label='Restrict analysis to time range (s):',
