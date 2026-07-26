@@ -135,10 +135,10 @@ def get_config_file(config_path):
     Returns:
         str: the real path to the config file.
     """
-    # !New Update from Wenjin -- resolve the bundled config from this file's directory.
-    # detectron2 used pkg_resources.resource_filename here, but setuptools 81 removed
-    # pkg_resources, which aborted the import on launch. The configs folder ships next to
-    # this file, so a path relative to __file__ finds it without pkg_resources.
+    # !New Update from Wenjin
+    # detectron2 located this config with pkg_resources.resource_filename. setuptools 81
+    # removed pkg_resources, so that import failed on launch. The configs folder ships next
+    # to this file, so a path relative to __file__ finds the config without pkg_resources.
     cfg_file = os.path.join(os.path.dirname(__file__), "configs", config_path)
     if not os.path.exists(cfg_file):
         raise RuntimeError("{} not available in Model Zoo!".format(config_path))
