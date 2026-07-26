@@ -78,7 +78,21 @@ pip install ./LabGym
 
 ### Option B — `conda` (if you already use Miniconda or Anaconda)
 
-The same commands work on macOS, Windows, and Linux:
+**macOS.** Install TensorFlow from conda-forge, which is built without AVX and runs
+on both Apple Silicon and Rosetta:
+
+```bash
+git clone https://github.com/devindwj0304/LabGym-LabGrymace.git
+cd LabGym-LabGrymace
+conda create -n labgrymace python=3.10 -y
+conda activate labgrymace
+conda install -c conda-forge "tensorflow>=2.10.1,<2.16.0" -y
+pip install --upgrade pip
+pip install .
+pip install ./LabGym
+```
+
+**Windows and Linux.** pip installs the correct TensorFlow build for each platform:
 
 ```bash
 git clone https://github.com/devindwj0304/LabGym-LabGrymace.git
@@ -95,11 +109,11 @@ Either option installs two commands: **`LabGrymace`** (the pain tool) and
 
 **If something goes wrong**
 
-- **Apple Silicon (M1–M4):** use a native **arm64** Python from
-  <https://www.python.org/downloads/macos/>. The x86 TensorFlow build requires AVX
-  instructions, which Rosetta does not provide, so a Rosetta environment aborts on launch.
-  To stay on Rosetta, install TensorFlow from conda-forge, which is built without AVX:
-  `conda install -c conda-forge "tensorflow>=2.10.1,<2.16.0"`.
+- **Apple Silicon (M1–M4):** the pip TensorFlow build requires AVX instructions, which
+  Rosetta does not provide, so it aborts on launch under an Intel (Rosetta) environment.
+  The macOS conda instructions above avoid this by installing a conda-forge build without
+  AVX. For the `venv` path, use a native arm64 Python from
+  <https://www.python.org/downloads/macos/>, whose pip TensorFlow build does not use AVX.
 - **Windows:** if PowerShell blocks environment activation, run
   `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, then try again.
 
