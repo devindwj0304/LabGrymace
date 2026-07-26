@@ -47,8 +47,10 @@ Requires **Python 3.10** (Python 3.9 and 3.11 are also supported).
 > LabGrymace depends on specific versions of TensorFlow and NumPy. Installing it into a shared environment may downgrade these packages and break other software. Create a dedicated environment before installing and make sure it is **active** (your prompt shows its name, e.g. `(.venv)` or `(labgrymace)`) before running `pip install`.
 
 Install **Python 3.10** from <https://www.python.org/downloads/>, then follow the steps
-for your system. These follow the upstream
-[LabGym installation](https://labgym.readthedocs.io/en/latest/installation/index.html).
+for your system. The steps use the same method as the upstream
+[LabGym installation](https://labgym.readthedocs.io/en/latest/installation/index.html),
+but install the modified `LabGym_LabGrymace` build from this repository (`pip install ./LabGym`),
+not the upstream LabGym release from PyPI.
 
 ### macOS
 
