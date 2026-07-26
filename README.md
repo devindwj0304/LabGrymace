@@ -78,6 +78,9 @@ pip install ./LabGym
 
 ### Option B — `conda` (if you already use Miniconda or Anaconda)
 
+If you do not have conda, install Miniconda from
+<https://www.anaconda.com/docs/getting-started/miniconda/install> first.
+
 **macOS.** Install TensorFlow from conda-forge, which is built without AVX and runs
 on both Apple Silicon and Rosetta:
 
@@ -173,4 +176,4 @@ LabGrymace is licensed under **GPL-3.0** (see [`LICENSE`](LICENSE)).
 
 This repository includes a modified version of **LabGym** (Ye Lab, University of Michigan), which is licensed under **GPL-3.0**. The original attribution and license are preserved in [`LabGym/LICENSE.txt`](LabGym/LICENSE.txt).
 
-If you use LabGrymace in published research, please cite both **LabGrymace** and **LabGym**.
+If you use LabGrymace in published research, please cite both **LabGrymace** and **LabGym**. The upstream LabGym code is available at <https://github.com/umyelab/LabGym> and is described in Hu, Y., Ferrario, C.R., Maitland, A.D., Ionides, R.B., Ghimire, A., Watson, B., Iwasaki, K., White, H., Xi, Y., Zhou, J., and Ye, B. (2023). LabGym: Quantification of user-defined animal behaviors using learning-based holistic assessment. Cell Reports Methods 3, 100415. doi:10.1016/j.crmeth.2023.100415.
