@@ -176,4 +176,4 @@ LabGrymace is licensed under **GPL-3.0** (see [`LICENSE`](LICENSE)).
 
 This repository includes a modified version of **LabGym** (Ye Lab, University of Michigan), which is licensed under **GPL-3.0**. The original attribution and license are preserved in [`LabGym/LICENSE.txt`](LabGym/LICENSE.txt).
 
-If you use LabGrymace in published research, please cite both **LabGrymace** and **LabGym**.
+If you use LabGrymace in published research, please cite both **LabGrymace** and **LabGym**. The upstream LabGym code is available at <https://github.com/umyelab/LabGym>.
