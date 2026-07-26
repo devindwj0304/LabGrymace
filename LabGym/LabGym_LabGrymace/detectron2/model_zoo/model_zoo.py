@@ -1,7 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates.
 import os
 from typing import Optional
-import pkg_resources
 import torch
 
 from LabGym_LabGrymace.detectron2.checkpoint import DetectionCheckpointer
@@ -136,9 +135,11 @@ def get_config_file(config_path):
     Returns:
         str: the real path to the config file.
     """
-    cfg_file = pkg_resources.resource_filename(
-        "LabGym.detectron2.model_zoo", os.path.join("configs", config_path)
-    )
+    # !New Update from Wenjin -- resolve the bundled config from this file's directory.
+    # detectron2 used pkg_resources.resource_filename here, but setuptools 81 removed
+    # pkg_resources, which aborted the import on launch. The configs folder ships next to
+    # this file, so a path relative to __file__ finds it without pkg_resources.
+    cfg_file = os.path.join(os.path.dirname(__file__), "configs", config_path)
     if not os.path.exists(cfg_file):
         raise RuntimeError("{} not available in Model Zoo!".format(config_path))
     return cfg_file
