@@ -68,7 +68,8 @@ pip install .
 pip install ./LabGym
 ```
 
-If `LabGym_LabGrymace` aborts on launch with a TensorFlow AVX error, the virtual
+**Do the following only if `LabGym_LabGrymace` aborts on launch with a TensorFlow AVX
+error. If it launches successfully, skip this step.** The abort means the virtual
 environment is x86 and runs under Rosetta, which does not provide AVX. Rebuild it as a
 native arm64 environment using the arm64 build of the universal2 Python:
 
