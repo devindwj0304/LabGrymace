@@ -110,6 +110,11 @@ pip install ./LabGym
 Every setup installs two commands: **`LabGrymace`** (the pain tool) and
 **`LabGym_LabGrymace`** (our modified LabGym build).
 
+Running the install again is safe. pip prints `Requirement already satisfied` for
+packages that are already present and does not download them again. The two LabGrymace
+packages are rebuilt and replace their previous copy, so re-running does not create a
+duplicate. To see what is installed, run `pip show LabGrymace LabGym_LabGrymace`.
+
 > **The `LabGym_LabGrymace` build is required — not optional.** LabGrymace reads output generated only by this modified LabGym 2.9.0 build. The latest `LabGym` (v3.x) is **not compatible**. Because the two packages have different names, they can be installed side by side. See [Two LabGyms, side by side](docs/LABGYM_CHANGES.md#two-labgyms-side-by-side).
 
 **Models will be updated in Zenodo soon.**
@@ -134,7 +139,7 @@ LabGrymace
 LabGym_LabGrymace
 ```
 
-If either command is not found (usually because your virtual environment is not on the PATH), launch it through Python instead:
+If either command is not found, the Python 3.10 environment is usually not on your PATH. Activate the environment first, or launch through Python instead:
 
 ```bash
 python -m LabGrymace
