@@ -46,79 +46,67 @@ Requires **Python 3.10** (Python 3.9 and 3.11 are also supported).
 > **Use a dedicated environment—never install into the conda `base` environment.**
 > LabGrymace depends on specific versions of TensorFlow and NumPy. Installing it into a shared environment may downgrade these packages and break other software. Create a dedicated environment before installing and make sure it is **active** (your prompt shows its name, e.g. `(.venv)` or `(labgrymace)`) before running `pip install`.
 
-Choose **one** of the two setups below — you do not need both. On Windows, first install
-Python from <https://www.python.org/downloads/windows/>, tick **"Add python.exe to PATH"**,
-then use **PowerShell**.
+Install **Python 3.10** from <https://www.python.org/downloads/>, then follow the steps
+for your system. These follow the upstream
+[LabGym installation](https://labgym.readthedocs.io/en/latest/installation/index.html).
 
-### Option A — `venv` (built into Python, nothing extra to install)
+### macOS
 
-**macOS and Linux**
+Download the **macOS 64-bit universal2** Python 3.10 installer from
+<https://www.python.org/downloads/macos/> and run it. The universal2 build runs natively
+on Apple Silicon, so its TensorFlow does not require AVX.
 
 ```bash
 git clone https://github.com/devindwj0304/LabGym-LabGrymace.git
 cd LabGym-LabGrymace
 python3 -m venv .venv
 source .venv/bin/activate
-pip install --upgrade pip
+pip install --upgrade pip wheel setuptools
 pip install .
 pip install ./LabGym
 ```
 
-**Windows**
+### Windows
+
+Download the **Windows 64-bit** Python 3.10 installer from
+<https://www.python.org/downloads/windows/>, tick **"Add python.exe to PATH"** and
+**"Disable path length limit"**, then use PowerShell.
 
 ```powershell
 git clone https://github.com/devindwj0304/LabGym-LabGrymace.git
 cd LabGym-LabGrymace
 python -m venv .venv
 .venv\Scripts\activate
-pip install --upgrade pip
+pip install --upgrade pip wheel setuptools
 pip install .
 pip install ./LabGym
 ```
 
-### Option B — `conda` (if you already use Miniconda or Anaconda)
+### Linux
 
-If you do not have conda, install Miniconda from
-<https://www.anaconda.com/docs/getting-started/miniconda/install> first.
+Install the system packages, including the GTK libraries that wxPython needs:
 
-**macOS.** Install TensorFlow from conda-forge, which is built without AVX and runs
-on both Apple Silicon and Rosetta:
+```bash
+sudo apt update
+sudo apt install build-essential git python3.10 python3.10-venv
+sudo apt install libgtk-3-dev libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-mixer-2.0-0
+```
+
+Then create the environment and install:
 
 ```bash
 git clone https://github.com/devindwj0304/LabGym-LabGrymace.git
 cd LabGym-LabGrymace
-conda create -n labgrymace python=3.10 -y
-conda activate labgrymace
-conda install -c conda-forge "tensorflow>=2.10.1,<2.16.0" -y
-pip install --upgrade pip
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip wheel setuptools
+pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04 wxPython
 pip install .
 pip install ./LabGym
 ```
 
-**Windows and Linux.** pip installs the correct TensorFlow build for each platform:
-
-```bash
-git clone https://github.com/devindwj0304/LabGym-LabGrymace.git
-cd LabGym-LabGrymace
-conda create -n labgrymace python=3.10 -y
-conda activate labgrymace
-pip install --upgrade pip
-pip install .
-pip install ./LabGym
-```
-
-Either option installs two commands: **`LabGrymace`** (the pain tool) and
+Every setup installs two commands: **`LabGrymace`** (the pain tool) and
 **`LabGym_LabGrymace`** (our modified LabGym build).
-
-**If something goes wrong**
-
-- **Apple Silicon (M1–M4):** the pip TensorFlow build requires AVX instructions, which
-  Rosetta does not provide, so it aborts on launch under an Intel (Rosetta) environment.
-  The macOS conda instructions above avoid this by installing a conda-forge build without
-  AVX. For the `venv` path, use a native arm64 Python from
-  <https://www.python.org/downloads/macos/>, whose pip TensorFlow build does not use AVX.
-- **Windows:** if PowerShell blocks environment activation, run
-  `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, then try again.
 
 > **The `LabGym_LabGrymace` build is required — not optional.** LabGrymace reads output generated only by this modified LabGym 2.9.0 build. The latest `LabGym` (v3.x) is **not compatible**. Because the two packages have different names, they can be installed side by side. See [Two LabGyms, side by side](docs/LABGYM_CHANGES.md#two-labgyms-side-by-side).
 
