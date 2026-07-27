@@ -1076,8 +1076,8 @@ class AnalyzeAnimalDetector():
 		print(datetime.datetime.now())
 		self.log.append(str(datetime.datetime.now()))
 
-		# CRITICAL: Clear PyTorch GPU cache before loading TensorFlow model
-		# Detection phase (PyTorch/Detectron2) may have occupied GPU memory
+		# Clear the PyTorch GPU cache before loading the TensorFlow model.
+		# The detection phase (PyTorch / Detectron2) may have occupied GPU memory.
 		if torch.cuda.is_available():
 			torch.cuda.empty_cache()
 			torch.cuda.synchronize()
@@ -1148,23 +1148,14 @@ class AnalyzeAnimalDetector():
 
 			predictions = categorizer.predict(inputs, batch_size=32)
 
-			# CRITICAL DEBUG: Check if this initialization loop runs
-			print(f"INITIALIZATION DEBUG for {animal_name}:")
-			print(f"  IDs to initialize: {IDs}")
-			print(f"  all_behavior_parameters keys: {list(self.all_behavior_parameters[animal_name].keys())}")
-			print(f"  event_probability before init: {list(self.event_probability[animal_name].keys())}")
+			# Initialize every behavior probability and event track to a full-length placeholder.
 			
 			for behavior_name in self.all_behavior_parameters[animal_name]:
-				print(f"  Initializing behavior: {behavior_name}")
 				for i in IDs:
-					print(f"    Initializing ID {i} for {behavior_name}")
 					self.all_behavior_parameters[animal_name][behavior_name]['probability'][i] = [np.nan] * len(
 						self.all_time)
 					self.event_probability[animal_name][i] = [['NA', -1]] * len(self.all_time)
-					print(f"    Successfully initialized event_probability[{animal_name}][{i}] with {len(self.all_time)} items")
 			
-			print(f"  event_probability after init: {list(self.event_probability[animal_name].keys())}")
-			print(f"  event_probability length: {len(self.event_probability[animal_name])}")
 
 			idx = 0
 			for n in IDs:
