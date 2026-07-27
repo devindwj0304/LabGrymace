@@ -149,15 +149,26 @@ duplicate. To see what is installed, run `pip show LabGrymace LabGym_LabGrymace`
 
 ### Launching
 
-Activate your virtual environment first. Two GUI applications are installed 
+Two GUI applications are installed:
 - **`LabGrymace`**: computes pain scores from LabGym output.
 - **`LabGym_LabGrymace`**: our modified LabGym build that generates the tracking output used by LabGrymace.
- 
-Launch them from the command line:
 
+These commands are available only while the virtual environment is active. The environment
+is not removed when you close the terminal, but it must be reactivated in each new terminal
+before launching.
+
+**macOS and Linux**
 ```bash
-LabGrymace
-LabGym_LabGrymace
+cd LabGym-LabGrymace
+source .venv/bin/activate
+LabGrymace            # or: LabGym_LabGrymace
+```
+
+**Windows (PowerShell)**
+```powershell
+cd LabGym-LabGrymace
+.venv\Scripts\activate
+LabGrymace            # or: LabGym_LabGrymace
 ```
 
 If either command is not found, the Python 3.10 environment is usually not on your PATH. Activate the environment first, or launch through Python instead:
