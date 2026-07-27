@@ -28,7 +28,7 @@ Rows marked **\*** change the output numbers; the rest prevent crashes or add co
 
 | File | Change |
 |---|---|
-| `analyzebehavior_dt.py` | **\*** Each facial region is scored only against its own behaviors, so an ear is never given an eye behavior. When the model is unsure, the frame is assigned its most likely behavior instead of being left blank (`NA`). Frames in which the detector finds nothing no longer affect the area measurements. |
+| `analyzebehavior_dt.py` | **\*** Each facial region is scored only against its own behaviors, so an ear is never given an eye behavior. Frames in which the detector finds nothing no longer affect the area measurements. |
 | `categorizer.py` | Trained models are saved in the newer `.keras` format, which upstream LabGym cannot open, and load under TensorFlow 2.17 / Keras 3. Testing a categorizer also exports a confusion matrix. |
 | `analyzebehavior.py` | The categorizer runs on the CPU so it does not compete with the detector for the GPU. Includes trajectory-drawing and UTF-8 log fixes. |
 | `tools.py` | The CUDA path is read from the environment instead of a hardcoded cluster path. Adds a per-frame pattern-image option and guards against empty frames, empty contours, and zero-area contours that previously crashed. |
