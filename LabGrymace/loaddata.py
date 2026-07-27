@@ -1695,6 +1695,12 @@ class LoadDataAdvanced:
                 else:
                     pos_cols = ['Ear0Pos','Ear1Pos']; evt_cols = ['Ear0Event','Ear1Event']
 
+                # Newer pandas rejects assigning text to an all-NaN float column, so the
+                # label columns are converted to object dtype before any text is written.
+                for _col in pos_cols + evt_cols:
+                    if _col in df.columns:
+                        df[_col] = df[_col].astype(object)
+
                 for t in idx:
                     rows = time_to_rows.get(t, [])
                     if not rows:
@@ -1724,6 +1730,9 @@ class LoadDataAdvanced:
                     self._presence_from_integrated_sheet(dataset_key, 'nose', 'noseBul'), idx)
                 bl_pres = self._presence_bool(
                     self._presence_from_integrated_sheet(dataset_key, 'nose', 'noseBL'), idx)
+                for _col in ('NosePos', 'NoseEvent'):
+                    if _col in df.columns:
+                        df[_col] = df[_col].astype(object)
                 for t in idx:
                     rows = time_to_rows.get(t, [])
                     if not rows:
