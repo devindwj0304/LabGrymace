@@ -33,7 +33,7 @@ Rows marked **\*** change the output numbers; the rest prevent crashes or add co
 | `analyzebehavior.py` | categorizer inference pinned to CPU (avoids detectron2 CUDA clash); trajectory and UTF-8 log fixes |
 | `tools.py` | `CUDA_HOME` read from the environment (not a hardcoded cluster path); per-frame pattern images; guards for `None` frames, empty contours, zero area |
 | `gui_preprocessor.py` | unreadable videos (e.g. AV1) auto-transcoded to H.264 |
-| `gui_categorizer.py` | optional per-frame ROI export |
+| `gui_categorizer.py` | optional per-frame region detection export in categorizer |
 | `gui_analyzer.py` | rejects categorizers in an unsupported behavior mode |
 | `__init__.py` | TensorFlow and PyTorch share one GPU |
 | `__main__.py` | startup PyPI version check removed |
