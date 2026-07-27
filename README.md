@@ -14,11 +14,24 @@ This repository contains two parts:
 
 ## The outputs of LabGrymace:
 
-**1. Summary spreadsheets** — Three Excel files (`ear_summary.xlsx`, `eye_summary.xlsx`, `nose_summary.xlsx`) containing frame-by-frame measurements for each facial region. Frames removed by the mirror-reflection filter are highlighted in **orange**, and the merged measurements used for pain-score calculation are highlighted in **yellow**.
+
+**1. Annotated video**
+
+An `.mp4` copy of the original recording with the continuously updated pain score overlaid on each frame, allowing direct comparison between the quantified pain score and the animal's behavior.
+
+Below is an example comparing a mouse experiencing pain (high pain score) with one not experiencing pain (low pain score):
+
+| Pain | No pain |
+|:---:|:---:|
+| ![High-CNO overlay](docs/images/output-overlay-highcno.gif) | ![Baseline overlay](docs/images/output-overlay-baseline.gif) |
+
+**2. Summary spreadsheets** 
+
+Three Excel files (`ear_summary.xlsx`, `eye_summary.xlsx`, `nose_summary.xlsx`) containing frame-by-frame measurements for each facial region. Frames removed by the mirror-reflection filter are highlighted in **orange**, and the merged measurements used for pain-score calculation are highlighted in **yellow**.
 
 ![Summary spreadsheet](docs/images/output-summary.png)
 
-**2. Pain score analysis** 
+**3. Pain score analysis** 
 
 The analysis includes:
 - **`pain_scores.xlsx`** — one row per 100 s window, plus a `Summary` sheet with each recording's overall score.
@@ -27,20 +40,20 @@ The analysis includes:
 
 ![Pain score](docs/images/output-painscore.png)
 
-**3. Annotated video**
-
-An `.mp4` copy of the original recording with the continuously updated pain score overlaid on each frame, allowing direct comparison between the quantified pain score and the animal's behavior.
-
-Below is an example comparing a mouse experiencing chemical-induced pain (high pain score) with a baseline mouse (low pain score):
-
-| Chemical-induced mouse | Baseline mouse |
-|:---:|:---:|
-| ![High-CNO overlay](docs/images/output-overlay-highcno.gif) | ![Baseline overlay](docs/images/output-overlay-baseline.gif) |
-
 ---
 
 ## Installation
 
+Every setup installs two commands: **`LabGrymace`** (the pain tool) and
+**`LabGym_LabGrymace`** (our modified LabGym build).
+
+Running the install again is safe. pip prints `Requirement already satisfied` for
+packages that are already present and does not download them again. The two LabGrymace
+packages are rebuilt and replace their previous copy, so re-running does not create a
+duplicate. To see what is installed, run `pip show LabGrymace LabGym_LabGrymace`.
+
+> **The `LabGym_LabGrymace` build is required — not optional.** LabGrymace reads output generated only by this modified LabGym 2.9.0 build. The latest `LabGym` (v3.x) is **not compatible**. Because the two packages have different names, they can be installed side by side. See [Two LabGyms, side by side](docs/LABGYM_CHANGES.md#two-labgyms-side-by-side).
+> 
 Requires **Python 3.10** (Python 3.9 and 3.11 are also supported). 
 
 > **Use a dedicated environment—never install into the conda `base` environment.**
@@ -68,9 +81,9 @@ pip install .
 pip install ./LabGym
 ```
 
-**Do the following only if `LabGym_LabGrymace` aborts on launch with a TensorFlow AVX
-error. If it launches successfully, skip this step.** The abort means the virtual
-environment is x86 and runs under Rosetta, which does not provide AVX. Rebuild it as a
+**Do the following only if `LabGym_LabGrymace` aborts during launch with a TensorFlow AVX
+error. If it launches successfully, skip this step.** This error usually indicates that the virtual
+environment uses an x86 version of Python running under Rosetta, which does not provide AVX. Rebuild the environment as a
 native arm64 environment using the arm64 build of the universal2 Python:
 
 ```bash
@@ -128,20 +141,16 @@ pip install .
 pip install ./LabGym
 ```
 
-Every setup installs two commands: **`LabGrymace`** (the pain tool) and
-**`LabGym_LabGrymace`** (our modified LabGym build).
+## Pretrained Models
 
-Running the install again is safe. pip prints `Requirement already satisfied` for
-packages that are already present and does not download them again. The two LabGrymace
-packages are rebuilt and replace their previous copy, so re-running does not create a
-duplicate. To see what is installed, run `pip show LabGrymace LabGym_LabGrymace`.
+Pretrained Detector and Categorizer models are available from **the LabGym Zoo.**
 
-> **The `LabGym_LabGrymace` build is required — not optional.** LabGrymace reads output generated only by this modified LabGym 2.9.0 build. The latest `LabGym` (v3.x) is **not compatible**. Because the two packages have different names, they can be installed side by side. See [Two LabGyms, side by side](docs/LABGYM_CHANGES.md#two-labgyms-side-by-side).
+After updating the models:
 
-**Models will be updated in Zenodo soon.**
+- place Detector models in `LabGym/LabGym_LabGrymace/detectors/`
+- place Categorizer models in `LabGym/LabGym_LabGrymace/models/`
 
-**After updating the model**, place a detector under `LabGym/LabGym_LabGrymace/detectors/` and a categorizer under
-`LabGym/LabGym_LabGrymace/models/`, then select it in the GUI.
+Then select the desired models in the LabGym GUI.
 
 ---
 
@@ -192,8 +201,7 @@ The reflection filter is **disabled by default** and can be enabled with a check
 
 ## Documentation
 
-- **[How LabGym_LabGrymace differs from upstream](docs/LABGYM_CHANGES.md)** — describes the modifications made to LabGym and identifies those that affect results.
-
+- **[How LabGym_LabGrymace differs from the original LabGym (upstream)](docs/LABGYM_CHANGES.md)** — summarizes the modifications to LabGym and highlights those that affect analysis results.
 ---
 
 ## License
