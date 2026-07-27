@@ -2133,7 +2133,7 @@ class WindowLv1_FacialMethods(wx.Frame):
         boxsizer.Add(btn_gen, 0, wx.ALIGN_CENTER)
         boxsizer.Add(0, 14, 0)
 
-        button_mgs = wx.Button(panel, label='Step 2 — Pain Score  (Mouse Grimace Scale)', size=(320, 40))
+        button_mgs = wx.Button(panel, label='Step 2 — Pain Score', size=(320, 40))
         button_mgs.Bind(wx.EVT_BUTTON, self.open_pain_score)
         wx.Button.SetToolTip(
             button_mgs,
@@ -2246,9 +2246,8 @@ class WindowLv2_GenerateSummary(wx.Frame):
         btn_pick.Bind(wx.EVT_BUTTON, self.pick_folder)
         wx.Button.SetToolTip(
             btn_pick,
-            'Select a folder containing LabGym _processed animal subfolders.\n'
-            'Each subfolder must contain behavior subfolders: fEarBL, fEyeOT, noseBul, etc.\n'
-            'Click multiple times to add animals from different locations.',
+            'This is the folder that LabGym_LabGrymace produces as its "Analyzed Videos" output.\n'
+            'Click multiple times to add folders from different locations.',
         )
         btn_remove = wx.Button(panel, label='Remove selected', size=(220, 28))
         btn_remove.Bind(wx.EVT_BUTTON, self.remove_animal)
