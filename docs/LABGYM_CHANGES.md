@@ -3,7 +3,7 @@
 [`LabGym/`](../LabGym) is the upstream **LabGym v2.9.1** source tree with the changes below.
 It reports version `2.9.0` — the build LabGrymace was calibrated against — and installs as
 `LabGym_LabGrymace` so it can sit next to the public `LabGym`. Every change carries a
-`!New Update from Wenjin` comment in the source; the other 8 Python modules are
+`!New Update from Wenjin` comment in the source; the remaining Python modules are
 byte-identical to upstream.
 
 Upstream: <https://github.com/umyelab/LabGym> (Ye Lab, University of Michigan), GPL-3.0.
@@ -28,16 +28,15 @@ Rows marked **\*** change the output numbers; the rest prevent crashes or add co
 
 | File | Change |
 |---|---|
-| `analyzebehavior_dt.py` | **\*** per-animal behavior filtering; low-confidence frames assigned instead of `NA`; zero-mask frames dropped from `area_diffs` |
-| `categorizer.py` | **\*** trained models saved as `.keras` (not loadable by upstream); TF 2.17 / Keras 3 loading; confusion matrices |
-| `analyzebehavior.py` | categorizer inference pinned to CPU (avoids detectron2 CUDA clash); trajectory and UTF-8 log fixes |
-| `tools.py` | `CUDA_HOME` read from the environment (not a hardcoded cluster path); per-frame pattern images; guards for `None` frames, empty contours, zero area |
-| `gui_preprocessor.py` | unreadable videos (e.g. AV1) auto-transcoded to H.264 |
-| `gui_categorizer.py` | optional per-frame region detection export in categorizer |
-| `gui_analyzer.py` | rejects categorizers in an unsupported behavior mode |
-| `__init__.py` | TensorFlow and PyTorch share one GPU |
-| `__main__.py` | startup PyPI version check removed |
-| `gui_main.py` | credits and repo links for this build |
+| `analyzebehavior_dt.py` | **\*** Each facial region is scored only against its own behaviors, so an ear is never given an eye behavior. When the model is unsure, the frame is assigned its most likely behavior instead of being left blank (`NA`). Frames in which the detector finds nothing no longer affect the area measurements. |
+| `categorizer.py` | Trained models are saved in the newer `.keras` format, which upstream LabGym cannot open, and load under TensorFlow 2.17 / Keras 3. Testing a categorizer also exports a confusion matrix. |
+| `analyzebehavior.py` | The categorizer runs on the CPU so it does not compete with the detector for the GPU. Includes trajectory-drawing and UTF-8 log fixes. |
+| `tools.py` | The CUDA path is read from the environment instead of a hardcoded cluster path. Adds a per-frame pattern-image option and guards against empty frames, empty contours, and zero-area contours that previously crashed. |
+| `gui_preprocessor.py` | A video that cannot be read (for example AV1) is transcoded to H.264 automatically instead of failing. |
+| `gui_categorizer.py` | Adds an option to export the detected region of every frame. |
+| `gui_analyzer.py` | A categorizer trained in an unsupported behavior mode is refused with a clear message instead of failing partway through the analysis. |
+| `__init__.py` | TensorFlow and PyTorch are configured to share one GPU, instead of the first one to load claiming all of its memory. |
+| `__main__.py` | Removes the startup check that contacted PyPI on every launch and told users to upgrade to a release this build cannot read. |
 
 ## Vendored detectron2
 
