@@ -12,16 +12,16 @@ This repository contains two parts:
 
 ---
 
-## The outputs of LabGrymace:
+## LabGrymace Outputs:
 
 
 **1. Annotated video**
 
 An `.mp4` copy of the original recording with the continuously updated pain score overlaid on each frame, allowing direct comparison between the quantified pain score and the animal's behavior.
 
-Below is an example comparing a mouse experiencing pain (high pain score) with one not experiencing pain (low pain score):
+Below is an example comparing a recording with a high pain score and one with a low pain score:
 
-| Pain | No pain |
+| Chemically induced pain | Baseline |
 |:---:|:---:|
 | ![High-CNO overlay](docs/images/output-overlay-highcno.gif) | ![Baseline overlay](docs/images/output-overlay-baseline.gif) |
 
@@ -47,19 +47,16 @@ The analysis includes:
 Every setup installs two commands: **`LabGrymace`** (the pain tool) and
 **`LabGym_LabGrymace`** (our modified LabGym build).
 
-Running the install again is safe. pip prints `Requirement already satisfied` for
-packages that are already present and does not download them again. The two LabGrymace
-packages are rebuilt and replace their previous copy, so re-running does not create a
-duplicate. To see what is installed, run `pip show LabGrymace LabGym_LabGrymace`.
+**If you already have the original LabGym installed, it is safe to install LabGym_LabGrymace**. The modified build uses a different package name and command, so it will not overwrite or replace your existing LabGym installation. Both versions can coexist on the same computer.
 
-> **The `LabGym_LabGrymace` build is required — not optional.** LabGrymace reads output generated only by this modified LabGym 2.9.0 build. The latest `LabGym` (v3.x) is **not compatible**. Because the two packages have different names, they can be installed side by side. See [Two LabGyms, side by side](docs/LABGYM_CHANGES.md#two-labgyms-side-by-side).
+> **The `LabGym_LabGrymace` build is required — not optional.** LabGrymace reads output generated only by this modified LabGym 2.9.0 build. The latest `LabGym` (v3.x) is **not compatible**. Because the two packages have different names, they can be installed side by side.  See **[How LabGym_LabGrymace differs from the original LabGym (upstream)](docs/LABGYM_CHANGES.md)**.
 > 
-Requires **Python 3.10** (Python 3.9 and 3.11 are also supported). 
+Requires **Python 3.9 or Python 3.10** 
 
 > **Use a dedicated environment—never install into the conda `base` environment.**
 > LabGrymace depends on specific versions of TensorFlow and NumPy. Installing it into a shared environment may downgrade these packages and break other software. Create a dedicated environment before installing and make sure it is **active** (your prompt shows its name, e.g. `(.venv)` or `(labgrymace)`) before running `pip install`.
 
-Install **Python 3.10** from <https://www.python.org/downloads/>, then follow the steps
+Install **Python 3.9 or Python 3.10** from <https://www.python.org/downloads/>, then follow the steps
 for your system. The steps use the same method as the upstream
 [LabGym installation](https://labgym.readthedocs.io/en/latest/installation/index.html),
 but install the modified `LabGym_LabGrymace` build from this repository (`pip install ./LabGym`),
