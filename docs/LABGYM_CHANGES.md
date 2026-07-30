@@ -1,6 +1,6 @@
 # How our LabGym differs from upstream
 
-[`LabGym/`](../LabGym) is the upstream **LabGym v2.9.1** source tree with the changes below.
+[`LabGym_LabGrymace/`](../LabGym_LabGrymace) is the upstream **LabGym v2.9.1** source tree with the changes below.
 It reports version `2.9.0` — the build LabGrymace was calibrated against — and installs as
 `LabGym_LabGrymace` so it can sit next to the public `LabGym`. Every change carries a
 `!New Update from Wenjin` comment in the source; the remaining Python modules are

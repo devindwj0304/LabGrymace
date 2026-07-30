@@ -1,0 +1,100 @@
+[build-system]
+requires=['pdm-backend']
+build-backend='pdm.backend'
+
+[project]
+name='LabGym_LabGrymace'
+description='LabGym 2.9.0 modified for LabGrymace (installs alongside upstream LabGym).'
+authors=[
+    {name='Yujia Hu',email='yujiahu415@gmail.com'},
+    {name='Rohan Satapathy',email='rohansat@umich.edu'},
+    {name='John Ruckstuhl',email='john.ruckstuhl@gmail.com'},
+    {name='M. Victor Struman',email='strmark@umich.edu'},
+    {name='Kelly Goss',email='khgoss@umich.edu'},
+    {name='Isabelle Baker',email='ibaker@umich.edu'},
+]
+dependencies=[
+    'tensorflow>=2.10.1,<2.16.0;platform_system!="Windows"',
+    'tensorflow<2.11;platform_system=="Windows"',
+    'matplotlib',
+    'opencv-python',
+    'opencv-contrib-python',
+    'openpyxl',
+    'xlsxwriter',
+    'pandas',
+    'scikit-learn',
+    'scikit-image',
+    'seaborn',
+    'wxPython',
+    'scikit-posthocs',
+    'packaging',
+    'requests',
+    'numpy<=1.26.4',
+    'torch',
+    'torchvision',
+    'torchaudio',
+    'PyYAML',
+    'tomli',
+    'Pillow>=7.1',
+    'matplotlib',
+    'pycocotools>=2.0.2',
+    'termcolor>=1.1',
+    'yacs>=0.1.8',
+    'tabulate',
+    'cloudpickle',
+    'tqdm>4.29.0',
+    'tensorboard',
+    'fvcore>=0.1.5,<0.1.6',
+    'iopath>=0.1.7,<0.1.10',
+    "dataclasses; python_version<'3.7'",
+    'omegaconf>=2.1,<2.4',
+    'hydra-core>=1.1',
+    'black',
+    'ninja',
+    'six'
+]
+requires-python='>=3.9,<3.12'
+readme='README.md'
+license={text='GPL-3.0'}
+keywords=['behavior analysis','user defined behaviors','behavior quantification',]
+classifiers=[
+    'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10'
+]
+dynamic=['version']
+
+[project.urls]
+Homepage='https://github.com/devindwj0304/LabGym-LabGrymace'
+Documentation='https://github.com/devindwj0304/LabGym-LabGrymace/blob/main/README.md'
+Issues='https://github.com/devindwj0304/LabGym-LabGrymace/issues'
+
+[project.scripts]
+LabGym_LabGrymace='LabGym_LabGrymace_copy.__main__:main'
+
+[tool.pdm]
+distribution=true
+
+[tool.pdm.build]
+includes=['LabGym_LabGrymace_copy/']
+
+[tool.pdm.version]
+source='file'
+path='LabGym_LabGrymace_copy/__init__.py'
+
+[tool.pdm.dev-dependencies]
+docs=[
+    'sphinx>=7.2.6',
+    'sphinx-autobuild>=2021.3.14',
+    'sphinx-copybutton>=0.5.2',
+    'myst-parser>=2.0.0',
+    'furo>=2023.9.10',
+    'sphinx-inline-tabs>=2023.4.21',
+]
+
+[tool.ruff.lint]
+select=['E4','E7','E9','F','I001']
+ignore-init-module-imports=true

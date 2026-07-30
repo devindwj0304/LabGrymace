@@ -8,7 +8,7 @@
 
 This repository contains two parts: 
 - **[`LabGrymace`](LabGrymace)**, the graphical application for pain-score computation and visualization.
-- **[`LabGym_LabGrymace`](LabGym)**, a modified version of LabGym 2.9.0, which performs facial region tracking and generates the input files used by LabGrymace.
+- **[`LabGym_LabGrymace`](LabGym_LabGrymace)**, a modified version of LabGym 2.9.0, which performs facial region tracking and generates the input files used by LabGrymace.
 
 ---
 
@@ -58,7 +58,7 @@ If Anaconda or Miniconda is installed, run `conda deactivate` first so the insta
 Install **Python 3.9 or Python 3.10** from <https://www.python.org/downloads/>, then follow the steps
 for your system. The steps use the same method as the upstream
 [LabGym installation](https://labgym.readthedocs.io/en/latest/installation/index.html),
-but install the modified `LabGym_LabGrymace` build from this repository (`pip install ./LabGym`),
+but install the modified `LabGym_LabGrymace` build from this repository (`pip install ./LabGym_LabGrymace`),
 not the upstream LabGym release from PyPI.
 
 ### macOS
@@ -72,7 +72,7 @@ git clone https://github.com/devindwj0304/LabGrymace.git
 cd LabGrymace
 python3.10 -m pip install --upgrade pip wheel setuptools
 python3.10 -m pip install .
-python3.10 -m pip install ./LabGym
+python3.10 -m pip install ./LabGym_LabGrymace
 ```
 
 **Do the following only if `LabGym_LabGrymace` aborts during launch with a TensorFlow AVX
@@ -95,7 +95,7 @@ git clone https://github.com/devindwj0304/LabGrymace.git
 cd LabGrymace
 py -3.10 -m pip install --upgrade pip wheel setuptools
 py -3.10 -m pip install .
-py -3.10 -m pip install ./LabGym
+py -3.10 -m pip install ./LabGym_LabGrymace
 ```
 
 ### Linux
@@ -116,7 +116,7 @@ cd LabGrymace
 python3.10 -m pip install --upgrade pip wheel setuptools
 python3.10 -m pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04 wxPython
 python3.10 -m pip install .
-python3.10 -m pip install ./LabGym
+python3.10 -m pip install ./LabGym_LabGrymace
 ```
 
 ## Pretrained Models
@@ -125,8 +125,8 @@ Pretrained Detector and Categorizer models are available from **the LabGym Zoo.*
 
 After updating the models:
 
-- place Detector models in `LabGym/LabGym_LabGrymace/detectors/`
-- place Categorizer models in `LabGym/LabGym_LabGrymace/models/`
+- place Detector models in `LabGym_LabGrymace/LabGym_LabGrymace_copy/detectors/`
+- place Categorizer models in `LabGym_LabGrymace/LabGym_LabGrymace_copy/models/`
 
 Then select the desired models in the LabGym GUI.
 
@@ -151,7 +151,7 @@ If either command is not found, the Python 3.10 scripts folder is not on your PA
 
 ```bash
 python3.10 -m LabGrymace
-python3.10 -m LabGym_LabGrymace
+python3.10 -m LabGym_LabGrymace_copy
 ```
 
 You can also start either application from a Python session. This follows the upstream
@@ -160,7 +160,7 @@ rather than the upstream `LabGym`:
 
 ```python
 from LabGrymace import __main__; __main__.main()          # the pain tool
-from LabGym_LabGrymace import __main__; __main__.main()    # the modified LabGym build
+from LabGym_LabGrymace_copy import __main__; __main__.main()    # the modified LabGym build
 ```
 
 > **The two applications run independently.** `LabGrymace` opens immediately. 
@@ -185,6 +185,6 @@ The reflection filter is **disabled by default** and can be enabled with a check
 ## License
 LabGrymace is licensed under **GPL-3.0** (see [`LICENSE`](LICENSE)).
 
-This repository includes a modified version of **LabGym** (Ye Lab, University of Michigan), which is licensed under **GPL-3.0**. The original attribution and license are preserved in [`LabGym/LICENSE.txt`](LabGym/LICENSE.txt).
+This repository includes a modified version of **LabGym** (Ye Lab, University of Michigan), which is licensed under **GPL-3.0**. The original attribution and license are preserved in [`LabGym_LabGrymace/LICENSE.txt`](LabGym_LabGrymace/LICENSE.txt).
 
 If you use LabGrymace in published research, please cite both **LabGrymace** and **LabGym**. The upstream LabGym code is available at <https://github.com/umyelab/LabGym>.
