@@ -14,7 +14,7 @@ authors = [
 ]
 keywords = ['neuroscience', 'pain', 'facial-expression', 'mouse', 'LabGym', 'behavior']
 dependencies = [
-    'wxPython',
+    'wxPython==4.2.5',
     'pandas',
     'numpy',
     'matplotlib',
