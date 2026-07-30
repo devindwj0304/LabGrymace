@@ -4,17 +4,13 @@ This is a **modified copy of [LabGym](https://github.com/umyelab/LabGym)** (Ye L
 University of Michigan; GPL-3.0), carrying the changes listed below. LabGrymace depends on
 these changes, so the public LabGym cannot be used in its place.
 
-**Names.** The folder is `LabGym_LabGrymace/`; the import package inside it is
+The folder is `LabGym_LabGrymace/`; the import package inside it is
 `LabGym_LabGrymace_copy/`. It installs as the pip package **`LabGym_LabGrymace`** and runs
 with the command **`LabGym_LabGrymace`**. These names differ from the public `LabGym`, so
 both can be installed on the same computer.
 
-**Version.** It reports version `2.9.0`. This number is fixed on purpose: 2.9.0 is the
+It reports version `2.9.0`. This number is fixed on purpose: 2.9.0 is the
 exact build that LabGrymace was calibrated and tested against.
-
-**Scope of changes.** Every change is marked with a `!New Update from Wenjin` comment in
-the source. Apart from those changes and the renamed import namespace (`LabGym` →
-`LabGym_LabGrymace_copy`), the modules are unchanged from upstream LabGym.
 
 ## Two LabGyms, side by side
 
@@ -25,10 +21,8 @@ the source. Apart from those changes and the renamed import namespace (`LabGym` 
 | launch | `LabGym` | `LabGym_LabGrymace` |
 | use for | general LabGym work | producing LabGrymace's input |
 
-The two have different names, so both can be installed at the same time. There is nothing
-to uninstall or switch between.
 
-> **This build is required for LabGrymace, not optional.** Only it writes the output fields
+> **LabGym_LabGrymace is required for LabGrymace, not optional.** Only it writes the output fields
 > and the `.keras` categorizer format that LabGrymace reads.
 
 ## What changed
