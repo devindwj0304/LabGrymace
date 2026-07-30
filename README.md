@@ -68,8 +68,8 @@ Download the **macOS 64-bit universal2** Python 3.10 installer from
 on Apple Silicon, so its TensorFlow does not require AVX.
 
 ```bash
-git clone https://github.com/devindwj0304/LabGym-LabGrymace.git
-cd LabGym-LabGrymace
+git clone https://github.com/devindwj0304/LabGrymace.git
+cd LabGrymace
 python3.10 -m pip install --upgrade pip wheel setuptools
 python3.10 -m pip install .
 python3.10 -m pip install ./LabGym
@@ -91,8 +91,8 @@ Download the **Windows 64-bit** Python 3.10 installer from
 **"Disable path length limit"**, then use PowerShell.
 
 ```powershell
-git clone https://github.com/devindwj0304/LabGym-LabGrymace.git
-cd LabGym-LabGrymace
+git clone https://github.com/devindwj0304/LabGrymace.git
+cd LabGrymace
 py -3.10 -m pip install --upgrade pip wheel setuptools
 py -3.10 -m pip install .
 py -3.10 -m pip install ./LabGym
@@ -111,8 +111,8 @@ sudo apt install libgtk-3-dev libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-mixer-2.
 Then install LabGrymace:
 
 ```bash
-git clone https://github.com/devindwj0304/LabGym-LabGrymace.git
-cd LabGym-LabGrymace
+git clone https://github.com/devindwj0304/LabGrymace.git
+cd LabGrymace
 python3.10 -m pip install --upgrade pip wheel setuptools
 python3.10 -m pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04 wxPython
 python3.10 -m pip install .
