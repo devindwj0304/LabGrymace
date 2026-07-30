@@ -51,11 +51,11 @@ Every setup installs two commands: **`LabGrymace`** (the pain tool) and
 
 > **The `LabGym_LabGrymace` build is required — not optional.** LabGrymace reads output generated only by this modified LabGym 2.9.0 build. The latest `LabGym` (v3.x) is **not compatible**. Because the two packages have different names, they can be installed side by side.  See **[How LabGym_LabGrymace differs from the original LabGym (upstream)](docs/LABGYM_CHANGES.md)**.
 > 
-Requires **Python 3.9 or Python 3.10** 
+Requires **Python 3.10** 
 
 If Anaconda or Miniconda is installed, run `conda deactivate` first so the install does not go into the conda base environment. LabGrymace pins specific versions of TensorFlow and NumPy that could otherwise downgrade packages in a shared environment.
 
-Install **Python 3.9 or Python 3.10** from <https://www.python.org/downloads/>, then follow the steps
+Install **Python 3.10** from <https://www.python.org/downloads/>, then follow the steps
 for your system. The steps use the same method as the upstream
 [LabGym installation](https://labgym.readthedocs.io/en/latest/installation/index.html),
 but install the modified `LabGym_LabGrymace` build from this repository (`pip install ./LabGym_LabGrymace`),
