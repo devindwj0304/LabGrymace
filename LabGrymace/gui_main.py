@@ -2014,8 +2014,7 @@ class AnimalNamingDialog(wx.Dialog):
 
         header = wx.StaticText(
             self,
-            label=f'{len(self.detected)} animal folder(s) detected.\n'
-                  'Edit the name for each animal below (default = folder name).',
+            label='Edit the name for each animal below (default = folder name).',
         )
         root.Add(header, 0, wx.ALL, 12)
 
@@ -2415,7 +2414,7 @@ class VideoAnimalPairDialog(wx.Dialog):
     '''
 
     def __init__(self, parent, video_paths, animal_records):
-        super().__init__(parent, title='Select Video and Animal to Pair',
+        super().__init__(parent, title='Pair LabGym_LabGrymace Output Videos and Summary Files',
                          style=wx.DEFAULT_DIALOG_STYLE)
         self._video_paths    = video_paths
         self._animal_records = animal_records
@@ -2461,6 +2460,8 @@ class VideoAnimalPairDialog(wx.Dialog):
 
         panel.SetSizer(vbox)
         vbox.Fit(self)
+        if self.GetSize().width < 560:
+            self.SetSize((560, self.GetSize().height))
         self.Centre()
 
     def get_selection(self):
@@ -2487,30 +2488,30 @@ class WindowLv2_PainScore(wx.Frame):
         boxsizer = wx.BoxSizer(wx.VERTICAL)
         boxsizer.Add(0, 10, 0)
 
-        # ── Module A: Select LabGym Analyzed Videos ───────────────────────
-        lbl_videos = wx.StaticText(panel, label='Select LabGym Analyzed Videos:')
+        # ── Module A: Add LabGym_LabGrymace Annotated Videos ───────────────
+        lbl_videos = wx.StaticText(panel, label='Add LabGym_LabGrymace Annotated Videos:')
         boxsizer.Add(lbl_videos, 0, wx.LEFT, 20)
         boxsizer.Add(0, 4, 0)
 
         module_videos = wx.BoxSizer(wx.HORIZONTAL)
         btn_vid_col = wx.BoxSizer(wx.VERTICAL)
 
-        btn_add_videos = wx.Button(panel, label='Add LabGym analyzed videos', size=(300, 36))
+        btn_add_videos = wx.Button(panel, label='Add LabGym_LabGrymace Annotated Videos', size=(340, 36))
         btn_add_videos.Bind(wx.EVT_BUTTON, self.add_videos)
         wx.Button.SetToolTip(
             btn_add_videos,
-            'Select one or more analyzed video files (.avi, .mp4) from the\n'
+            'Select one or more annotated video files (.avi, .mp4) from the\n'
             'LabGym_LabGrymace "Analyzed Videos" output.\n'
             'Click multiple times to add videos from different folders.',
         )
-        btn_remove_videos = wx.Button(panel, label='Remove selected video', size=(300, 28))
+        btn_remove_videos = wx.Button(panel, label='Remove selected video', size=(340, 28))
         btn_remove_videos.Bind(wx.EVT_BUTTON, self.remove_selected_video)
 
         btn_vid_col.Add(btn_add_videos,    0, wx.BOTTOM, 4)
         btn_vid_col.Add(btn_remove_videos, 0)
 
         self.list_videos = wx.ListBox(panel, style=wx.LB_EXTENDED, size=(580, 90))
-        wx.ListBox.SetToolTip(self.list_videos, 'Selected LabGym analyzed video files.')
+        wx.ListBox.SetToolTip(self.list_videos, 'Selected LabGym_LabGrymace annotated video files.')
 
         module_videos.Add(btn_vid_col,      0, wx.LEFT | wx.RIGHT, 10)
         module_videos.Add(self.list_videos, 1, wx.LEFT | wx.RIGHT | wx.EXPAND, 5)
@@ -2581,7 +2582,7 @@ class WindowLv2_PainScore(wx.Frame):
         # ── Row 3c: Mirror-reflection filter (opt-in) ─────────────────────
         module_mirror = wx.BoxSizer(wx.HORIZONTAL)
         self.chk_mirror = wx.CheckBox(
-            panel, label='Apply mirror-reflection filter (opt-in)', size=(300, -1))
+            panel, label='Apply Reflection Filter (optional)', size=(300, -1))
         self.chk_mirror.SetValue(APPLY_MIRROR_FILTER)   # default = OFF
         wx.Window.SetToolTip(
             self.chk_mirror,
@@ -2613,7 +2614,7 @@ class WindowLv2_PainScore(wx.Frame):
         boxsizer.Add(0, 25, 0)
 
         # ── Start button ───────────────────────────────────────────────────
-        button_start = wx.Button(panel, label='Calculate pain score and generate chart', size=(330, 40))
+        button_start = wx.Button(panel, label='Calculate Pain Score and Generate Chart', size=(330, 40))
         button_start.Bind(wx.EVT_BUTTON, self.calculate_and_plot)
         wx.Button.SetToolTip(
             button_start,
@@ -2646,7 +2647,7 @@ class WindowLv2_PainScore(wx.Frame):
 
     def add_videos(self, event):
         wildcard = 'Video files (*.avi;*.mp4;*.mov)|*.avi;*.mp4;*.mov|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, 'Select LabGym analyzed video files', wildcard=wildcard,
+        dlg = wx.FileDialog(self, 'Select LabGym_LabGrymace annotated video files', wildcard=wildcard,
                             style=wx.FD_OPEN | wx.FD_MULTIPLE)
         if dlg.ShowModal() != wx.ID_OK:
             dlg.Destroy()
@@ -2836,7 +2837,7 @@ class WindowLv2_PainScore(wx.Frame):
 
     def generate_overlay(self, event):
         if not self._video_paths:
-            wx.MessageBox('Please add at least one video in the "Select LabGym Analyzed Videos" section.',
+            wx.MessageBox('Please add at least one video in the "Add LabGym_LabGrymace Annotated Videos" section.',
                           'No Video', wx.OK | wx.ICON_WARNING)
             return
         if not self.animal_records:
