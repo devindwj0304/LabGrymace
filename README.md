@@ -128,7 +128,7 @@ After updating the models:
 - place Detector models in `LabGym_LabGrymace/LabGym_LabGrymace_copy/detectors/`
 - place Categorizer models in `LabGym_LabGrymace/LabGym_LabGrymace_copy/models/`
 
-Then select the desired models in the LabGym GUI.
+Then select the desired models in the LabGym_LabGrymace GUI.
 
 ---
 
