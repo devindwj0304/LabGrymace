@@ -53,8 +53,7 @@ Every setup installs two commands: **`LabGrymace`** (the pain tool) and
 > 
 Requires **Python 3.9 or Python 3.10** 
 
-> **Use a dedicated environment—never install into the conda `base` environment.**
-> LabGrymace depends on specific versions of TensorFlow and NumPy. Installing it into a shared environment may downgrade these packages and break other software. Create a dedicated environment before installing and make sure it is **active** (your prompt shows its name, e.g. `(.venv)` or `(labgrymace)`) before running `pip install`.
+If Anaconda or Miniconda is installed, run `conda deactivate` first so the install does not go into the conda base environment. LabGrymace pins specific versions of TensorFlow and NumPy that could otherwise downgrade packages in a shared environment.
 
 Install **Python 3.9 or Python 3.10** from <https://www.python.org/downloads/>, then follow the steps
 for your system. The steps use the same method as the upstream
@@ -71,32 +70,18 @@ on Apple Silicon, so its TensorFlow does not require AVX.
 ```bash
 git clone https://github.com/devindwj0304/LabGym-LabGrymace.git
 cd LabGym-LabGrymace
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip wheel setuptools
-pip install .
-pip install ./LabGym
+python3.10 -m pip install --upgrade pip wheel setuptools
+python3.10 -m pip install .
+python3.10 -m pip install ./LabGym
 ```
 
 **Do the following only if `LabGym_LabGrymace` aborts during launch with a TensorFlow AVX
-error. If it launches successfully, skip this step.** This error usually indicates that the virtual
-environment uses an x86 version of Python running under Rosetta, which does not provide AVX. Rebuild the environment as a
-native arm64 environment using the arm64 build of the universal2 Python:
+error. If it launches successfully, skip this step.** This error means Python is running under Rosetta
+rather than natively. Reinstall the universal2 Python 3.10 above and confirm that it
+reports `arm64`:
 
 ```bash
-rm -rf .venv
-arch -arm64 /Library/Frameworks/Python.framework/Versions/3.10/bin/python3 -m venv .venv
-source .venv/bin/activate
-python -c "import platform; print(platform.machine())"   # must print arm64
-pip install --upgrade pip wheel setuptools
-pip install .
-pip install ./LabGym
-```
-
-Confirm that TensorFlow loads without aborting:
-
-```bash
-python -c "import tensorflow as tf; print('TF OK', tf.__version__)"
+python3.10 -c "import platform; print(platform.machine())"   # must print arm64
 ```
 
 ### Windows
@@ -108,11 +93,9 @@ Download the **Windows 64-bit** Python 3.10 installer from
 ```powershell
 git clone https://github.com/devindwj0304/LabGym-LabGrymace.git
 cd LabGym-LabGrymace
-python -m venv .venv
-.venv\Scripts\activate
-pip install --upgrade pip wheel setuptools
-pip install .
-pip install ./LabGym
+py -3.10 -m pip install --upgrade pip wheel setuptools
+py -3.10 -m pip install .
+py -3.10 -m pip install ./LabGym
 ```
 
 ### Linux
@@ -121,21 +104,19 @@ Install the system packages, including the GTK libraries that wxPython needs:
 
 ```bash
 sudo apt update
-sudo apt install build-essential git python3.10 python3.10-venv
+sudo apt install build-essential git python3.10 python3-pip
 sudo apt install libgtk-3-dev libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-mixer-2.0-0
 ```
 
-Then create the environment and install:
+Then install LabGrymace:
 
 ```bash
 git clone https://github.com/devindwj0304/LabGym-LabGrymace.git
 cd LabGym-LabGrymace
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip wheel setuptools
-pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04 wxPython
-pip install .
-pip install ./LabGym
+python3.10 -m pip install --upgrade pip wheel setuptools
+python3.10 -m pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04 wxPython
+python3.10 -m pip install .
+python3.10 -m pip install ./LabGym
 ```
 
 ## Pretrained Models
@@ -159,29 +140,18 @@ Two GUI applications are installed:
 - **`LabGrymace`**: computes pain scores from LabGym output.
 - **`LabGym_LabGrymace`**: our modified LabGym build that generates the tracking output used by LabGrymace.
 
-These commands are available only while the virtual environment is active. The environment
-is not removed when you close the terminal, but it must be reactivated in each new terminal
-before launching.
-
-**macOS and Linux**
-```bash
-cd LabGym-LabGrymace
-source .venv/bin/activate
-LabGrymace            # or: LabGym_LabGrymace
-```
-
-**Windows (PowerShell)**
-```powershell
-cd LabGym-LabGrymace
-.venv\Scripts\activate
-LabGrymace            # or: LabGym_LabGrymace
-```
-
-If either command is not found, the Python 3.10 environment is usually not on your PATH. Activate the environment first, or launch through Python instead:
+Run either command from a terminal:
 
 ```bash
-python -m LabGrymace
-python -m LabGym_LabGrymace
+LabGrymace
+LabGym_LabGrymace
+```
+
+If either command is not found, the Python 3.10 scripts folder is not on your PATH. Launch through Python instead:
+
+```bash
+python3.10 -m LabGrymace
+python3.10 -m LabGym_LabGrymace
 ```
 
 You can also start either application from a Python session. This follows the upstream
