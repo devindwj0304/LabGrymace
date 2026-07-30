@@ -2075,7 +2075,7 @@ class InitialWindow(wx.Frame):
 
         self.text_developers = wx.StaticText(
             panel,
-            label='Developed by Wenjin Dong\n\nBing Ye Lab, Life Sciences Institute, University of Michigan',
+            label='Created by Wenjin Dong and Bing Ye\n\nBing Ye Lab, Life Sciences Institute, University of Michigan',
             style=wx.ALIGN_CENTER | wx.ST_ELLIPSIZE_END,
         )
         boxsizer.Add(self.text_developers, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 5)
@@ -2088,7 +2088,7 @@ class InitialWindow(wx.Frame):
         boxsizer.Add(links, 0, wx.ALIGN_CENTER, 50)
         boxsizer.Add(0, 50, 0)
 
-        button_facial = wx.Button(panel, label='Select Facial Expression Methods', size=(260, 40))
+        button_facial = wx.Button(panel, label='Start Analysis', size=(260, 40))
         button_facial.Bind(wx.EVT_BUTTON, self.window_facial)
         wx.Button.SetToolTip(button_facial,
                              'Select a facial expression analysis method to quantify pain scores.')
@@ -2100,7 +2100,7 @@ class InitialWindow(wx.Frame):
         self.Show(True)
 
     def window_facial(self, event):
-        WindowLv1_FacialMethods('Select Facial Expression Methods')
+        WindowLv1_FacialMethods('Start Analysis')
 
 
 # ============================================================================
@@ -2888,7 +2888,7 @@ class WindowLv2_PainScore(wx.Frame):
 
 def main_window():
     app = wx.App()
-    InitialWindow(f'LabGrymace v{__version__}')
+    InitialWindow(f'LabGrymace v.{__version__}')
     app.MainLoop()
 
 
