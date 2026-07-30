@@ -2091,7 +2091,7 @@ class InitialWindow(wx.Frame):
         button_facial = wx.Button(panel, label='Start Analysis', size=(260, 40))
         button_facial.Bind(wx.EVT_BUTTON, self.window_facial)
         wx.Button.SetToolTip(button_facial,
-                             'Select a facial expression analysis method to quantify pain scores.')
+                             'Open the LabGrymace workflow. Step 1 generates the summary files, and Step 2 computes the pain score.')
         boxsizer.Add(button_facial, 0, wx.ALIGN_CENTER)
         boxsizer.Add(0, 50, 0)
 
@@ -2100,7 +2100,7 @@ class InitialWindow(wx.Frame):
         self.Show(True)
 
     def window_facial(self, event):
-        WindowLv1_FacialMethods('Start Analysis')
+        WindowLv1_FacialMethods('LabGrymace workflow')
 
 
 # ============================================================================
@@ -2118,7 +2118,7 @@ class WindowLv1_FacialMethods(wx.Frame):
         boxsizer = wx.BoxSizer(wx.VERTICAL)
         boxsizer.Add(0, 30, 0)
 
-        label = wx.StaticText(panel, label='Select a task:', style=wx.ALIGN_CENTER)
+        label = wx.StaticText(panel, label='Please complete the following two steps:', style=wx.ALIGN_CENTER)
         boxsizer.Add(label, 0, wx.ALIGN_CENTER)
         boxsizer.Add(0, 18, 0)
 
@@ -2126,9 +2126,9 @@ class WindowLv1_FacialMethods(wx.Frame):
         btn_gen.Bind(wx.EVT_BUTTON, self.open_generate)
         wx.Button.SetToolTip(
             btn_gen,
-            'Select a folder of LabGym _processed output (raw behavior subfolders).\n'
-            'LabGrymace will generate ear_summary.xlsx / eye_summary.xlsx / nose_summary.xlsx\n'
-            'inside each animal folder.  Run this once per dataset.',
+            'Select the LabGym output folder from "Analyzed Videos".\n'
+            'LabGrymace generates ear_summary.xlsx / eye_summary.xlsx / nose_summary.xlsx\n'
+            'inside each animal folder. Run this once per dataset.',
         )
         boxsizer.Add(btn_gen, 0, wx.ALIGN_CENTER)
         boxsizer.Add(0, 14, 0)
@@ -2242,14 +2242,14 @@ class WindowLv2_GenerateSummary(wx.Frame):
         # ── Row 1: add / remove raw data folders ──
         row1 = wx.BoxSizer(wx.HORIZONTAL)
         btn_col = wx.BoxSizer(wx.VERTICAL)
-        btn_pick = wx.Button(panel, label='Add raw data folder', size=(220, 36))
+        btn_pick = wx.Button(panel, label='Add LabGym_LabGrymace output folder', size=(300, 36))
         btn_pick.Bind(wx.EVT_BUTTON, self.pick_folder)
         wx.Button.SetToolTip(
             btn_pick,
             'This is the folder that LabGym_LabGrymace produces as its "Analyzed Videos" output.\n'
             'Click multiple times to add folders from different locations.',
         )
-        btn_remove = wx.Button(panel, label='Remove selected', size=(220, 28))
+        btn_remove = wx.Button(panel, label='Remove selected', size=(300, 28))
         btn_remove.Bind(wx.EVT_BUTTON, self.remove_animal)
         btn_col.Add(btn_pick,   0, wx.BOTTOM, 4)
         btn_col.Add(btn_remove, 0)
@@ -2257,7 +2257,7 @@ class WindowLv2_GenerateSummary(wx.Frame):
 
         self.list_animals = wx.ListBox(panel, style=wx.LB_EXTENDED, size=(-1, 90))
         wx.ListBox.SetToolTip(self.list_animals,
-                              'Detected animal folders. Drag folders onto this window from Finder, or click "Add raw data folder".')
+                              'Detected animal folders. Drag folders onto this window from Finder, or click "Add LabGym_LabGrymace output folder".')
         row1.Add(self.list_animals, 1, wx.LEFT | wx.RIGHT | wx.EXPAND, 5)
         vbox.Add(row1, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
         vbox.Add(0, 8, 0)
@@ -2397,6 +2397,8 @@ class WindowLv2_GenerateSummary(wx.Frame):
         self._log(f'Done — {ok} generated, {skip} skipped, {fail} failed.')
 
         if fail == 0:
+            self._log('')
+            self._log('Step 1 completed successfully. Proceed to Step 2 (Pain Score).')
             dest = self._output_dir or '(each animal folder)'
             wx.MessageBox(
                 f'Summary files generated successfully.\n\n'
