@@ -1,4 +1,4 @@
-# How our LabGym differs from upstream
+# How LabGym_LabGrymace differs from the upstream LabGym
 
 This is a **modified copy of [LabGym](https://github.com/umyelab/LabGym)** (Ye Lab,
 University of Michigan; GPL-3.0), carrying the changes listed below. LabGrymace depends on
