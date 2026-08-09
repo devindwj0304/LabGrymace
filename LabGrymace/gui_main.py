@@ -2891,7 +2891,7 @@ class WindowLv2_PainScore(wx.Frame):
 
 def main_window():
     app = wx.App()
-    InitialWindow(f'LabGrymace v.{__version__}')
+    InitialWindow(f'LabGrymace v{__version__}')
     app.MainLoop()
 
 
