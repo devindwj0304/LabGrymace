@@ -121,7 +121,7 @@ python3.10 -m pip install ./LabGym_LabGrymace
 
 ## Pretrained Models
 
-Pretrained Detector and Categorizer models are available from **the LabGym Zoo.**
+Pretrained Detector and Categorizer models are available from [**the LabGym Zoo**.](https://github.com/umyelab/LabGym/blob/master/LabGym_Zoo.md)
 
 After updating the models:
 
