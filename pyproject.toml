@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'LabGrymace'
-version = '0.1.0'
+version = '1.0.0'
 description = 'Quantifies pain-related facial expressions in freely moving mice (a LabGym extension).'
 readme = 'README.md'
 requires-python = '>=3.9'
@@ -23,7 +23,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = 'https://github.com/devindwj0304/LabGym-LabGrymace'
+Homepage = 'https://github.com/devindwj0304/LabGrymace'
 
 # `LabGrymace` becomes a terminal command that launches the GUI after install.
 [project.scripts]
