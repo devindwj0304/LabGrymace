@@ -345,7 +345,7 @@ def main_window():
 
 	the_absolute_current_path=str(Path(__file__).resolve().parent)
 	app=wx.App()
-	InitialWindow(f'LabGym v{__version__}')
+	InitialWindow(f'LabGym_LabGrymace v{__version__}')
 	logger.info('The user interface initialized!')
 	app.MainLoop()
 
