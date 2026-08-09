@@ -182,10 +182,21 @@ The reflection filter is **disabled by default** and can be enabled with a check
 - **[How LabGym_LabGrymace differs from the original LabGym (upstream)](docs/LABGYM_CHANGES.md)** — summarizes the modifications to LabGym and highlights those that affect analysis results.
 ---
 
-## License
-LabGrymace is licensed under **GPL-3.0** (see [`LICENSE`](LICENSE)).
+## Licensing
+LabGrymace is available under a dual-licensing model.
+
+### Open-source license
+
+This repository is licensed under the GNU General Public License v3.0 (GPL-3.0). See [`LICENSE`](LICENSE) for details.
 
 This repository includes a modified version of [**LabGym**](https://github.com/umyelab/LabGym) (Ye Lab, University of Michigan), which is licensed under **GPL-3.0**. The original attribution and license are preserved in [`LabGym_LabGrymace/LICENSE.txt`](LabGym_LabGrymace/LICENSE.txt).
+
+### Commercial licensing
+
+Commercial licenses are available from Behaviora LLC for organizations that wish to use LabGrymace under terms different from the GPL-3.0 license, including proprietary commercial applications, redistribution, enterprise deployment, and commercial support.
+
+For commercial licensing or support inquiries, please contact:
+contact@labgym.org
 
 ---
 
