@@ -68,9 +68,9 @@ classifiers=[
 dynamic=['version']
 
 [project.urls]
-Homepage='https://github.com/devindwj0304/LabGym-LabGrymace'
-Documentation='https://github.com/devindwj0304/LabGym-LabGrymace/blob/main/README.md'
-Issues='https://github.com/devindwj0304/LabGym-LabGrymace/issues'
+Homepage='https://github.com/devindwj0304/LabGrymace'
+Documentation='https://github.com/devindwj0304/LabGrymace/blob/main/README.md'
+Issues='https://github.com/devindwj0304/LabGrymace/issues'
 
 [project.scripts]
 LabGym_LabGrymace='LabGym_LabGrymace_copy.__main__:main'
