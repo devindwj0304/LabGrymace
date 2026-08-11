@@ -69,7 +69,7 @@ dynamic=['version']
 
 [project.urls]
 Homepage='https://github.com/devindwj0304/LabGrymace'
-Documentation='https://github.com/devindwj0304/LabGrymace/blob/main/README.md'
+Documentation='https://labgrymace-installation.readthedocs.io/'
 Issues='https://github.com/devindwj0304/LabGrymace/issues'
 
 [project.scripts]
