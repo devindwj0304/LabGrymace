@@ -18,6 +18,9 @@ env/
 # LabGrymace caches generated next to data
 _labgrymace_cache.npz
 
+# Sphinx documentation build output
+docs/_build/
+
 # OS / editor
 .DS_Store
 Thumbs.db

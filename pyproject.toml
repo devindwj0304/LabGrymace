@@ -24,6 +24,7 @@ dependencies = [
 
 [project.urls]
 Homepage = 'https://github.com/devindwj0304/LabGrymace'
+Documentation = 'https://labgrymace-installation.readthedocs.io/'
 
 # `LabGrymace` becomes a terminal command that launches the GUI after install.
 [project.scripts]
